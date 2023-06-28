@@ -12,31 +12,33 @@ def test_Led():
         led.ledIndex(0x40,128,0,128)    #purple
         led.ledIndex(0x80,255,255,255)  #white'''
         print ("The LED has been lit, the color is red orange yellow green cyan-blue blue white")
-        time.sleep(3)               #wait 3s
+        time.sleep(1)               #wait 3s
         led.colorWipe(led.strip, Color(0,0,0))  #turn off the light
         print ("\nEnd of program")
+        # fun time
+        while True:
+            led.rainbowCycle(led.strip)
     except KeyboardInterrupt:
         led.colorWipe(led.strip, Color(0,0,0))  #turn off the light
         print ("\nEnd of program")
 
-        
-        
+               
 from Motor import *            
 PWM=Motor()          
 def test_Motor(): 
     try:
         PWM.setMotorModel(1000,1000,1000,1000)       #Forward
         print ("The car is moving forward")
-        time.sleep(1)
+        time.sleep(0.5)
         PWM.setMotorModel(-1000,-1000,-1000,-1000)   #Back
         print ("The car is going backwards")
-        time.sleep(1)
+        time.sleep(0.5)
         PWM.setMotorModel(-1500,-1500,2000,2000)       #Left 
         print ("The car is turning left")
-        time.sleep(1)
+        time.sleep(0.5)
         PWM.setMotorModel(2000,2000,-1500,-1500)       #Right 
         print ("The car is turning right")  
-        time.sleep(1)
+        time.sleep(0.5)
         PWM.setMotorModel(0,0,0,0)                   #Stop
         print ("\nEnd of program")
     except KeyboardInterrupt:

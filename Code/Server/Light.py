@@ -10,6 +10,7 @@ class Light:
             while True:
                 L = self.adc.recvADC(0)
                 R = self.adc.recvADC(1)
+                print(R, L)
                 if L < 2.99 and R < 2.99 :
                     self.PWM.setMotorModel(600,600,600,600)
                     
