@@ -18,7 +18,7 @@ def test_loop():
 def path_loop():
     
     forward()
-    time.sleep(1.9)
+    time.sleep(2.1)
     halfturn()
     time.sleep(1.35)
     """
@@ -39,7 +39,7 @@ def path_loop():
     forward()
     time.sleep(.5)
     left()
-    time.sleep(.6)
+    time.sleep(.3)
     forward()
     time.sleep(1.9)
     left()
@@ -51,7 +51,7 @@ def path_loop():
 def halfturn():
     for i in range(5):
         right()
-        time.sleep(.253)
+        time.sleep(.25)
         forward()
         time.sleep(.07)
   
