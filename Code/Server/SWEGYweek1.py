@@ -43,12 +43,10 @@ def move(direction):
         if   direction == "Forward":
             PWM.setMotorModel(2000,2000,2000,2000)
             print("Moving forward")
-            time.sleep(5)
             stop()
         elif direction == "Backward":
             PWM.setMotorModel(-2000,-2000,-2000,-2000)
             print("Moving backward")
-            time.sleep(5)
             stop()
         elif direction == "Right":
             PWM.setMotorModel(2000,2000,-2000,-2000)
@@ -66,3 +64,56 @@ def move(direction):
 
 def stop():
     PWM.setMotorModel(0,0,0,0)
+
+def CourseV02B():
+
+    move("Forward")
+    time.sleep(6)
+    stop()
+
+    move("Right")
+    time.sleep(0.75)
+    stop()
+
+    move("Forward")
+    time.sleep(.5)
+    stop()
+
+    move("Right")
+    time.sleep(0.75)
+    stop()
+
+    move("Forward")
+    time.sleep(5)
+    stop()
+
+    move("Left")
+    time.sleep(0.75)
+    stop()
+
+    move("Forward")
+    time.sleep(.5)
+    stop()
+
+    move("Left")
+    time.sleep(0.50)
+    stop()
+
+    move("Forward")
+    time.sleep(4)
+    stop()
+
+    move("Left")
+    time.sleep(0.25)
+    stop()
+
+    move("Forward")
+    time.sleep(3)
+    stop()
+
+
+
+
+
+
+
