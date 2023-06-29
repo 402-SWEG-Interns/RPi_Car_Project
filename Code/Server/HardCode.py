@@ -41,6 +41,18 @@ class Line_Tracking:
         time.sleep(.05)
         PWM.setMotorModel(3000,3000,-4000,-4000)
         time.sleep(.05)
+        PWM.setMotorModel(3000,3000,-4000,-4000)
+        time.sleep(.05)
+        # PWM.setMotorModel(3000,3000,300,300)
+        # time.sleep(.05)
+        # PWM.setMotorModel(3000,3000,-4000,-4000)
+        # time.sleep(.05)
+        # PWM.setMotorModel(3000,3000,-4000,-4000)
+        # time.sleep(.05)
+        # PWM.setMotorModel(3000,3000,300,300)
+        # time.sleep(.05)
+        # PWM.setMotorModel(3000,3000,-4000,-4000)
+        # time.sleep(.05)
 
         PWM.setMotorModel(800,800,800,800)
         time.sleep(.35)
@@ -60,12 +72,12 @@ class Line_Tracking:
         time.sleep(.05)
         PWM.setMotorModel(3000,3000,300,300)
         time.sleep(.05)
-        PWM.setMotorModel(3000,3000,-4000,-4000)
-        time.sleep(.05)
-        PWM.setMotorModel(3000,3000,300,300)
-        time.sleep(.05)
-        PWM.setMotorModel(3000,3000,-4000,-4000)
-        time.sleep(.05)
+        # PWM.setMotorModel(3000,3000,-4000,-4000)
+        # time.sleep(.05)
+        # PWM.setMotorModel(3000,3000,300,300)
+        # time.sleep(.05)
+        # PWM.setMotorModel(3000,3000,-4000,-4000)
+        # time.sleep(.05)
         
 
         PWM.setMotorModel(900,800,800,800) # second straight
@@ -100,7 +112,7 @@ class Line_Tracking:
 
 
         PWM.setMotorModel(800,800,800,800)
-        time.sleep(.35)
+        time.sleep(.32)
         
         
         PWM.setMotorModel(-4000,-4000,3000,3000)
@@ -118,8 +130,8 @@ class Line_Tracking:
         PWM.setMotorModel(800,800,800,800)
         time.sleep(2.85)
 
-        PWM.setMotorModel(300,300,3000,3000)
-        time.sleep(.05)
+        # PWM.setMotorModel(300,300,3000,3000)
+        # time.sleep(.05)
         PWM.setMotorModel(-4000,-4000,3000,3000)
         time.sleep(.05)
         PWM.setMotorModel(300,300,3000,3000)
@@ -131,13 +143,6 @@ class Line_Tracking:
         
         
 
-
-
-
-
-
-
-        
         
 
         PWM.setMotorModel(0,0,0,0)
