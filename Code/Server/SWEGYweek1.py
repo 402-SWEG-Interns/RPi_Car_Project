@@ -8,6 +8,21 @@ from Led import *
 PWM=Motor()
 infrared=Line_Tracking()
 
+# Wheels
+try:
+    PWM.setMotorModel(1000,0,0,0)
+    time.sleep(1)
+    PWM.setMotorModel(0,1000,0,0)
+    time.sleep(1)
+    PWM.setMotorModel(0,0,1000,0)
+    time.sleep(1)
+    PWM.setMotorModel(0,0,0,1000)
+    time.sleep(1)
+    PWM.setMotorModel(0,0,0,0)
+except KeyboardInterrupt:
+    PWM.setMotorModel(0,0,0,0)
+    Print("Program ended")
+
 # def completeTrack():
 #     incomplete = True
 #     while (incomplete):
