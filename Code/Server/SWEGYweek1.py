@@ -43,18 +43,16 @@ def move(direction):
         if   direction == "Forward":
             PWM.setMotorModel(2000,2000,2000,2000)
             print("Moving forward")
-            stop()
         elif direction == "Backward":
             PWM.setMotorModel(-2000,-2000,-2000,-2000)
             print("Moving backward")
-            stop()
         elif direction == "Right":
-            PWM.setMotorModel(2000,2000,-2000,-2000)
+            PWM.setMotorModel(1800,1800,-1500,-1500)
             print("Turning right")
-            time.sleep(0.75)
+            time.sleep(0.65)
             stop()
         elif direction == "Left":
-            PWM.setMotorModel(-2000,-2000,2000,2000)
+            PWM.setMotorModel(-1500,-1500,2000,2000)
             print("Turning left")
             time.sleep(0.75)
             stop()
@@ -68,52 +66,58 @@ def stop():
 def CourseV02B():
 
     move("Forward")
-    time.sleep(6)
+    time.sleep(1.9)
     stop()
+    time.sleep(0.1)
 
-    move("Right")
-    time.sleep(0.75)
+    PWM.setMotorModel(1800,1800,-1500,-1500)
+    time.sleep(0.7)
     stop()
-
-    move("Forward")
-    time.sleep(.5)
-    stop()
-
-    move("Right")
-    time.sleep(0.75)
-    stop()
+    time.sleep(0.1)
 
     move("Forward")
-    time.sleep(5)
+    time.sleep(.35)
     stop()
-
-    move("Left")
-    time.sleep(0.75)
-    stop()
-
-    move("Forward")
-    time.sleep(.5)
-    stop()
-
-    move("Left")
-    time.sleep(0.50)
-    stop()
-
-    move("Forward")
-    time.sleep(4)
-    stop()
-
-    move("Left")
     time.sleep(0.25)
+
+    PWM.setMotorModel(2000,2000,-1250,-1250)
+    time.sleep(0.9)
     stop()
+    time.sleep(0.1)
 
     move("Forward")
-    time.sleep(3)
+    time.sleep(1.35)
     stop()
+    time.sleep(0.1)
 
+    PWM.setMotorModel(-1250,-1250,2000,2000)
+    time.sleep(0.75)
+    stop()
+    time.sleep(0.1)
 
+    move("Forward")
+    time.sleep(.325)
+    stop()
+    time.sleep(0.05)
 
+    PWM.setMotorModel(-1250,-1250,2000,2000)
+    time.sleep(0.5)
+    stop()
+    time.sleep(0.1)
 
+    move("Forward")
+    time.sleep(1.325)
+    stop()
+    time.sleep(0.1)
 
+    PWM.setMotorModel(-1500,-1500,2000,2000)
+    time.sleep(0.2)
+    stop()
+    time.sleep(0.1)
 
+    move("Forward")
+    time.sleep(1.4)
+    stop()
+    time.sleep(0.1)
 
+CourseV02B()
