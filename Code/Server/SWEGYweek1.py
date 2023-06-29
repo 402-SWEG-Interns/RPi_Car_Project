@@ -6,23 +6,28 @@
 import time
 import RPi.GPIO as GPIO
 from Motor import *
-from Line_Tracking import *
+# from Line_Tracking import *   --- DO NOT UNCOMMENT ---
 # from Led import *
 
+GPIO.setmode(GPIO.BCM)
 PWM=Motor()
-IR=Line_Tracking()
 
 # Wheels
 # PWM.setMotorModel(Motor1, Motor2, Motor4, Motor3)   --- DO NOT UNCOMMENT ---
 # Motor1, Motor2, Motor4, Motor3   =   Front Left, Back Left, Front Right, Back Right
 
+# Infrared Initialization
+IR01 = 14
+IR02 = 15
+IR03 = 23
+GPIO.setup(IR01, GPIO.IN)
+GPIO.setup(IR02, GPIO.IN)
+GPIO.setup(IR03, GPIO.IN)
+
+
 def completeTrack():
     manualIncomplete = True
     while (manualIncomplete == True):
-        """URGENT
-        Insert Async Coding? Or create three while loops: the outermost for the track completion, the middlemost for checking Infrared status, and the innermost for determining car action based on Infrared status.
-        VERDICT
-        Three While Loops"""
 
         infrared = False
         while (infrared == False):
