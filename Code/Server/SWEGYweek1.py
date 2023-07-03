@@ -3,26 +3,26 @@
 # *update when this is false.
 
 # Import Library
-import time
-import RPi.GPIO as GPIO
-from Motor import *
-# from Line_Tracking import *   --- DO NOT UNCOMMENT ---
-# from Led import *
+# import time
+# # import RPi.GPIO as GPIO
+# from Motor import *
+# # from Line_Tracking import *   --- DO NOT UNCOMMENT ---
+# # from Led import *
 
-GPIO.setmode(GPIO.BCM)
-PWM=Motor()
+# # GPIO.setmode(GPIO.BCM)
+# # PWM=Motor()
 
-# Wheels
-# PWM.setMotorModel(Motor1, Motor2, Motor4, Motor3)   --- DO NOT UNCOMMENT ---
-# Motor1, Motor2, Motor4, Motor3   =   Front Left, Back Left, Front Right, Back Right
+# # Wheels
+# # PWM.setMotorModel(Motor1, Motor2, Motor4, Motor3)   --- DO NOT UNCOMMENT ---
+# # Motor1, Motor2, Motor4, Motor3   =   Front Left, Back Left, Front Right, Back Right
 
-# Infrared Initialization
-IR01 = 14
-IR02 = 15
-IR03 = 23
-GPIO.setup(IR01, GPIO.IN)
-GPIO.setup(IR02, GPIO.IN)
-GPIO.setup(IR03, GPIO.IN)
+# # Infrared Initialization
+# IR01 = 14
+# IR02 = 15
+# IR03 = 23
+# GPIO.setup(IR01, GPIO.IN)
+# GPIO.setup(IR02, GPIO.IN)
+# GPIO.setup(IR03, GPIO.IN)
 
 
 # def completeTrack():
@@ -38,87 +38,87 @@ GPIO.setup(IR03, GPIO.IN)
 #                 move("Stop")
 #                 print("\nEnd of program")
 
-def move(direction):
-    try:
-        if   direction == "Forward":
-            PWM.setMotorModel(2000,2000,2000,2000)
-            print("Moving forward")
-        elif direction == "Backward":
-            PWM.setMotorModel(-2000,-2000,-2000,-2000)
-            print("Moving backward")
-        elif direction == "Right":
-            PWM.setMotorModel(1800,1800,-1500,-1500)
-            print("Turning right")
-            time.sleep(0.65)
-            stop()
-        elif direction == "Left":
-            PWM.setMotorModel(-1500,-1500,2000,2000)
-            print("Turning left")
-            time.sleep(0.75)
-            stop()
-    except KeyboardInterrupt:
-        stop()
-        print("\nProgram has ended")
+# def move(direction):
+#     try:
+#         if   direction == "Forward":
+#             PWM.setMotorModel(2000,2000,2000,2000)
+#             print("Moving forward")
+#         elif direction == "Backward":
+#             PWM.setMotorModel(-2000,-2000,-2000,-2000)
+#             print("Moving backward")
+#         elif direction == "Right":
+#             PWM.setMotorModel(1800,1800,-1500,-1500)
+#             print("Turning right")
+#             time.sleep(0.65)
+#             stop()
+#         elif direction == "Left":
+#             PWM.setMotorModel(-1500,-1500,2000,2000)
+#             print("Turning left")
+#             time.sleep(0.75)
+#             stop()
+#     except KeyboardInterrupt:
+#         stop()
+#         print("\nProgram has ended")
 
-def stop():
-    PWM.setMotorModel(0,0,0,0)
+# def stop():
+#     PWM.setMotorModel(0,0,0,0)
 
-def CourseV02B():
+# def CourseV02B():
 
-    move("Forward")
-    time.sleep(1.9)
-    stop()
-    time.sleep(0.3)
+#     move("Forward")
+#     time.sleep(1.9)
+#     stop()
+#     time.sleep(0.3)
 
-    PWM.setMotorModel(1800,1800,-1500,-1500)
-    time.sleep(0.9)
-    stop()
-    time.sleep(0.3)
+#     PWM.setMotorModel(1800,1800,-1500,-1500)
+#     time.sleep(0.9)
+#     stop()
+#     time.sleep(0.3)
 
-    move("Forward")
-    time.sleep(.35)
-    stop()
-    time.sleep(0.3)
+#     move("Forward")
+#     time.sleep(.35)
+#     stop()
+#     time.sleep(0.3)
 
-    PWM.setMotorModel(2000,2000,-1250,-1250)
-    time.sleep(0.915)
-    stop()
-    time.sleep(0.3)
+#     PWM.setMotorModel(2000,2000,-1250,-1250)
+#     time.sleep(0.915)
+#     stop()
+#     time.sleep(0.3)
 
-    move("Forward")
-    time.sleep(1.35)
-    stop()
-    time.sleep(0.3)
+#     move("Forward")
+#     time.sleep(1.35)
+#     stop()
+#     time.sleep(0.3)
 
-    PWM.setMotorModel(-1250,-1250,2000,2000)
-    time.sleep(0.75)
-    stop()
-    time.sleep(0.3)
+#     PWM.setMotorModel(-1250,-1250,2000,2000)
+#     time.sleep(0.75)
+#     stop()
+#     time.sleep(0.3)
 
-    move("Forward")
-    time.sleep(.325)
-    stop()
-    time.sleep(0.3)
+#     move("Forward")
+#     time.sleep(.325)
+#     stop()
+#     time.sleep(0.3)
 
-    PWM.setMotorModel(-1250,-1250,2000,2000)
-    time.sleep(0.575)
-    stop()
-    time.sleep(0.3)
+#     PWM.setMotorModel(-1250,-1250,2000,2000)
+#     time.sleep(0.575)
+#     stop()
+#     time.sleep(0.3)
 
-    move("Forward")
-    time.sleep(1.325)
-    stop()
-    time.sleep(0.3)
+#     move("Forward")
+#     time.sleep(1.325)
+#     stop()
+#     time.sleep(0.3)
 
-    PWM.setMotorModel(-1500,-1500,2000,2000)
-    time.sleep(0.1)
-    stop()
-    time.sleep(0.3)
+#     PWM.setMotorModel(-1500,-1500,2000,2000)
+#     time.sleep(0.1)
+#     stop()
+#     time.sleep(0.3)
 
-    move("Forward")
-    time.sleep(1.8)
-    stop()
-    time.sleep(0.3)
+#     move("Forward")
+#     time.sleep(1.8)
+#     stop()
+#     time.sleep(0.3)
 
 # CourseV02B()
 
@@ -244,6 +244,6 @@ while(1):
     # Program Termination
     cv2.imshow("Multiple Color Detection in Real-TIme", imageFrame)
     if cv2.waitKey(10) & 0xFF == ord('q'):
-        cap.release()
+        webcam.release()   # Initial Code: cap.release()   New Code: webcam.release()
         cv2.destroyAllWindows()
         break
