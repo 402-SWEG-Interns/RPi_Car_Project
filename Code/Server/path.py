@@ -19,45 +19,28 @@ class Line_Tracking:
 
         i = 0
 
-        while i < 5:
-            PWM.setMotorModel(3000,3000,0,0) #first turn
-            time.sleep(.05)
-            PWM.setMotorModel(3000,3000,-4000,-4000)
-            time.sleep(.05)
-            i = i + 1
+        while i < 15:
+            PWM.setMotorModel(3000,3000,-800,-600) #first turn
+            time.sleep(.095)
+            i = i+1
         
-        
-        
-        
-
-        PWM.setMotorModel(800,800,800,800)
-        time.sleep(.3)
-
-        i = 0
-    
-        while i < 4:
-            PWM.setMotorModel(3000,3000,0,0) #first turn
-            time.sleep(.055)
-            PWM.setMotorModel(3100,3100,-4000,-4000)
-            time.sleep(.055)
-            i = i + 1
-        
-        
+        PWM.setMotorModel(0,0,0,0)
+        time.sleep(.025)
 
         PWM.setMotorModel(900,800,800,800) # second straight
-        time.sleep(2.05)
+        time.sleep(1.85)
 
         i = 0
 
-        while i < 4:
+        while i < 5:
             PWM.setMotorModel(300,300,3000,3000) #second
-            time.sleep(.05)
+            time.sleep(.045)
             PWM.setMotorModel(-4000,-4000,3000,3000)
-            time.sleep(.05)
+            time.sleep(.045)
             i = i + 1
 
-        
-
+        PWM.setMotorModel(0,0,0,0)
+        time.sleep(.025)
 
         PWM.setMotorModel(800,800,800,800)
         time.sleep(.32)
@@ -65,7 +48,7 @@ class Line_Tracking:
         
         i = 0
 
-        while i < 4:
+        while i < 5:
             PWM.setMotorModel(300,300,3000,3000) #second
             time.sleep(.05)
             PWM.setMotorModel(-4000,-4000,3000,3000)
@@ -78,9 +61,9 @@ class Line_Tracking:
 
         
         PWM.setMotorModel(-4000,-4000,3000,3000)
-        time.sleep(.07)
+        time.sleep(.1)
         PWM.setMotorModel(300,300,3000,3000)
-        time.sleep(.07)
+        time.sleep(.1)
         
         
 
