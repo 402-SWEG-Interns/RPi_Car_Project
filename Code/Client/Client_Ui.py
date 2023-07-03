@@ -539,6 +539,18 @@ class Ui_Client(object):
         font.setPointSize(10)
         self.Btn_Mode4.setFont(font)
         self.Btn_Mode4.setObjectName("Btn_Mode4")
+
+        # custom button
+
+        self.Btn_Tracking_Colors = QtWidgets.QPushButton(Client)
+        self.Btn_Tracking_Colors.setGeometry(QtCore.QRect(230, 560, 90, 30))
+        font = QtGui.QFont()
+        font.setFamily("Malgun Gothic")
+        font.setPointSize(10)
+        self.Btn_Tracking_Colors.setFont(font)
+        self.Btn_Tracking_Colors.setStyleSheet("")
+        self.Btn_Tracking_Colors.setObjectName("Btn_Tracking_Colors")
+
         self.Btn_Tracking_Faces = QtWidgets.QPushButton(Client)
         self.Btn_Tracking_Faces.setGeometry(QtCore.QRect(230, 460, 90, 30))
         font = QtGui.QFont()
@@ -614,5 +626,6 @@ class Ui_Client(object):
         self.Btn_Mode3.setText(_translate("Client", "M-Sonic"))
         self.Btn_Mode4.setText(_translate("Client", "M-Line"))
         self.Btn_Tracking_Faces.setText(_translate("Client", "Tracing-On"))
+        self.Btn_Tracking_Colors.setText(_translate("Client", "Color-Track-False"))
         self.Ultrasonic.setText(_translate("Client", "Ultrasonic"))
         self.Light.setText(_translate("Client", "Light"))

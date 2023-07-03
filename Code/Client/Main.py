@@ -135,7 +135,7 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Home.clicked.connect(self.on_btn_Home)
         self.Btn_Right.clicked.connect(self.on_btn_Right)
         self.Btn_Tracking_Faces.clicked.connect(self.Tracking_Face)
-        
+        self.Btn_Tracking_Colors.clicked.connect(self.Follow_Color)
 
         self.Btn_Buzzer.pressed.connect(self.on_btn_Buzzer)
         self.Btn_Buzzer.released.connect(self.on_btn_Buzzer)
@@ -605,6 +605,13 @@ class mywindow(QMainWindow,Ui_Client):
             self.Btn_Tracking_Faces.setText("Tracing-Off")
         else:
             self.Btn_Tracking_Faces.setText("Tracing-On")
+
+    def Follow_Color(self,color_x,color_y):
+        if self.Btn_Tracking_Colors.text()=="Follow-False":
+            self.Btn_Tracking_Colors.setText("Follow-True")
+        else:
+            self.Btn_Tracking_Colors.setText("Follow-False")
+
     def find_Face(self,face_x,face_y):
         if face_x!=0 and face_y!=0:
             offset_x=float(face_x/400-0.5)*2
@@ -613,19 +620,23 @@ class mywindow(QMainWindow,Ui_Client):
             delta_degree_y = -4 * offset_y
             self.servo1=self.servo1+delta_degree_x
             self.servo2=self.servo2+delta_degree_y
+            print(self.servo1, self.servo2)
             if offset_x > -0.15 and offset_y >-0.15 and offset_x < 0.15 and offset_y <0.15:
                 pass
             else:
-                self.HSlider_Servo1.setValue(self.servo1)
-                self.VSlider_Servo2.setValue(self.servo2)
+                self.HSlider_Servo1.setValue(int(self.servo1))
+                self.VSlider_Servo2.setValue(int(self.servo2))
+    
+
     def time(self):
         self.TCP.video_Flag=False
         try:
-            if  self.is_valid_jpg('video.jpg'):
+            if self.is_valid_jpg('video.jpg'):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
-                if self.Btn_Tracking_Faces.text()=="Tracing-Off":
-                        self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                if self.Btn_Tracking_Faces.text()=="Tracing-On":
+                    self.find_Face(self.TCP.face_x,self.TCP.face_y)
         except Exception as e:
+            print("video.jpg")
             print(e)
         self.TCP.video_Flag=True
         
