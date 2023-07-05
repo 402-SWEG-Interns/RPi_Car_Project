@@ -77,7 +77,7 @@ class VideoStreaming:
         # Set range for blue color and
         # define mask
         blue_lower = np.array([94, 80, 2], np.uint8)
-        blue_upper = np.array([120, 255, 255], np.uint8)
+        blue_upper = np.array([120, 200, 200], np.uint8)
         blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
 
         #Set Range for yellow color and define mask
