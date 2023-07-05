@@ -153,6 +153,10 @@ class VideoStreaming:
                 cv2.putText(img, "Yellow Color", (x,y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255,255))
 
         cv2.imwrite('video.jpg',img)
+        cv2.imwrite('red.jpg', res_red)
+        cv2.imwrite('blue.jpg', res_blue)
+        cv2.imwrite('green.jpg', res_green)
+        cv2.imwrite('yellow.jpg', res_yellow)
         
     def streaming(self,ip):
         stream_bytes = b' '
