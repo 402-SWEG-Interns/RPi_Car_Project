@@ -3,7 +3,7 @@ import time
 import RPi.GPIO as pin
 from Motor import *
 # from Line_Tracking import *   --- DO NOT UNCOMMENT ---
-from Led import *
+# from Led import *
 
 pin.setmode(pin.BCM)
 PWM=Motor()
@@ -29,6 +29,8 @@ pin.setup(IR, pin.IN)
 
 
 
+
+
 # Functions
 # main() --- Where the actual program occurs
 def main():
@@ -36,41 +38,41 @@ def main():
     print('Function: main()\nStatus:   active')
     
     try:
-        print('\nplaceholder')
-        PWM.setMotorModel(500,500,500,500)
+        # Hard Reset On The Motors
+        PWM.setMotorModel(0,0,0,0)
+
+
+
+        # Variables
+        # Booleans
+        Ls   = False
+        Ms   = False
+        Rs   = False
+        LMs  = False
+        MRs  = False
+        LRs  = False # If somehow Left and Right are triggered, but no Middle
+        LMRs = False
+        NULs = False # No Sensors
+        # Speeds
+        fS = 600
+        fF = 800
+        tS = -700
+        tF = -900
+        # Inside/Outside
+        io = True # Inside = False ; Outside = True
+
+
+
+
+
         while True:
             LMR=0x00 # Detects Black
-            if pin.input(IR01)==False: # Left Sensor
+            if pin.input(IR01)==io: # Left Sensor
                 LMR=(LMR | 4)
-            if pin.input(IR02)==False: # Middle Sensor
+            if pin.input(IR02)==io: # Middle Sensor
                 LMR=(LMR | 2)
-            if pin.input(IR03)==False: # Right Sensor
+            if pin.input(IR03)==io: # Right Sensor
                 LMR=(LMR | 1)
-            
-
-
-
-
-
-
-
-
-            
-            # Booleans
-            Ls   = False
-            Ms   = False
-            Rs   = False
-            LMs  = False
-            MRs  = False
-            LRs  = False # If somehow Left and Right are triggered, but no Middle
-            LMRs = False
-            NULs = False # No Sensors
-            sensors = [Ls, Ms, Rs, LMs, MRs, LRs, LMRs, NULs]
-
-
-
-
-
 
 
 
@@ -80,86 +82,128 @@ def main():
             # Start
             if   LMR==0: # No Sensors
                 if NULs == False:
-                    print('No Sensors Detected\nDriving Forward: Fast')
-                    for s in sensors:
-                        s = False
+                    print('\nNo Sensors Detected\nDriving Forward: Fast')
+                    Ls   = False
+                    Ms   = False
+                    Rs   = False
+                    LMs  = False
+                    MRs  = False
+                    LRs  = False
+                    LMRs = False
                     NULs = True
+                    PWM.setMotorModel(fF,fF,fF,fF)
             elif LMR==5: # Left + Right Sensors
                 if LRs == False:
-                    print('Left + Right Sensors Detected\nDriving Forward: Slow')
-                    for s in sensors:
-                        s = False
-                    LRs = True
+                    print('\nLeft + Right Sensors Detected\nDriving Forward: Slow')
+                    Ls   = False
+                    Ms   = False
+                    Rs   = False
+                    LMs  = False
+                    MRs  = False
+                    LRs  = True
+                    LMRs = False
+                    NULs = False
+                    PWM.setMotorModel(fS,fS,fS,fS)
 
 
 
             # Turn Right
             elif LMR==4: # Left Sensor
                 if Ls == False:
-                    print('Left Sensor Detected\nTurning Right: Soft')
-                    for s in sensors:
-                        s = False
-                    Ls = True
+                    print('\nLeft Sensor Detected\nTurning Right: Soft')
+                    Ls   = True
+                    Ms   = False
+                    Rs   = False
+                    LMs  = False
+                    MRs  = False
+                    LRs  = False
+                    LMRs = False
+                    NULs = False
+                    PWM.setMotorModel(fF,fF,tS,tS)
             elif LMR==6: # Left + Middle Sensors
                 if LMs == False:
-                    print('Left + Middle Sensor Detected\nTurning Right: Hard')
-                    for s in sensors:
-                        s = False
-                    LMs = True
+                    print('\nLeft + Middle Sensor Detected\nTurning Right: Hard')
+                    Ls   = False
+                    Ms   = False
+                    Rs   = False
+                    LMs  = True
+                    MRs  = False
+                    LRs  = False
+                    LMRs = False
+                    NULs = False
+                    PWM.setMotorModel(fF,fF,tF,tF)
 
 
 
             # Stop
             elif LMR==7: # All Sensors
                 if LMRs == False:
-                    print('All Sensors Detected\nStopping Car')
-                    for s in sensors:
-                        s = False
+                    print('\nAll Sensors Detected\nStopping Car')
+                    Ls   = False
+                    Ms   = False
+                    Rs   = False
+                    LMs  = False
+                    MRs  = False
+                    LRs  = False
                     LMRs = True
-                    # PWM.setMotorModel(0,0,0,0)
+                    NULs = False
+                    PWM.setMotorModel(0,0,0,0)
             elif LMR==2: # Middle Sensor
                 if Ms == False:
-                    print('Middle Sensor Detected\nStopping Car')
-                    for s in sensors:
-                        s = False
-                    Ms = True
-                    # PWM.setMotorModel(0,0,0,0)
+                    print('\nMiddle Sensor Detected\nStopping Car')
+                    Ls   = False
+                    Ms   = True
+                    Rs   = False
+                    LMs  = False
+                    MRs  = False
+                    LRs  = False
+                    LMRs = False
+                    NULs = False
+                    PWM.setMotorModel(0,0,0,0)
 
 
 
             # Turn Left
             elif LMR==3: # Middle + Right Sensors
                 if MRs == False:
-                    print('Middle + Right Sensor Detected\nTurning Left: Hard')
-                    for s in sensors:
-                        s = False
-                    MRs = True
+                    print('\nMiddle + Right Sensor Detected\nTurning Left: Hard')
+                    Ls   = False
+                    Ms   = False
+                    Rs   = False
+                    LMs  = False
+                    MRs  = True
+                    LRs  = False
+                    LMRs = False
+                    NULs = False
+                    PWM.setMotorModel(tF,tF,fF,fF)
             elif LMR==1: # Right Sensor
                 if Rs == False:
-                    print('Right Sensor Detected\nTurning Left: Soft')
-                    for s in sensors:
-                        s = False
-                    Rs = True
+                    print('\nRight Sensor Detected\nTurning Left: Soft')
+                    Ls   = False
+                    Ms   = False
+                    Rs   = True
+                    LMs  = False
+                    MRs  = False
+                    LRs  = False
+                    LMRs = False
+                    NULs = False
+                    PWM.setMotorModel(tS,tS,fF,fF)
 
 
     except KeyboardInterrupt:   # Ctrl+C
-        print('Function: main()\nStatus:   inactive')
+        print('\nFunction: main()\nStatus:   inactive')
         PWM.setMotorModel(0,0,0,0)
 
 # test() --- Where test code occurs before it is decided whether it is used in main() or not
-def test():
-    # v0.3 Test
-    print('Function: test()\nStatus:   active')
+# def test():
+#     # v0.3 Test
+#     print('Function: test()\nStatus:   active')
 
-    try:
-        print('\nplaceholder')
-    except KeyboardInterrupt:   # Ctrl+C
-        print('Function: test()\nStatus:   inactive')
-        PWM.setMotorModel(0,0,0,0)
-
-
-
-# 
+#     try:
+#         print('\nplaceholder')
+#     except KeyboardInterrupt:   # Ctrl+C
+#         print('Function: test()\nStatus:   inactive')
+#         PWM.setMotorModel(0,0,0,0)
 
 
 
