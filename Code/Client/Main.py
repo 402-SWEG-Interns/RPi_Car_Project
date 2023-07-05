@@ -616,8 +616,8 @@ class mywindow(QMainWindow,Ui_Client):
             if offset_x > -0.15 and offset_y >-0.15 and offset_x < 0.15 and offset_y <0.15:
                 pass
             else:
-                self.HSlider_Servo1.setValue(self.servo1)
-                self.VSlider_Servo2.setValue(self.servo2)
+                self.HSlider_Servo1.setValue(int(self.servo1))
+                self.VSlider_Servo2.setValue(int(self.servo2))
     def time(self):
         self.TCP.video_Flag=False
         try:
