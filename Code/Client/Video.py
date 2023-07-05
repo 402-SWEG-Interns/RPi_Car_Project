@@ -64,24 +64,24 @@ class VideoStreaming:
     
         # Set range for red color and 
         # define mask
-        red_lower = np.array([136, 87, 111], np.uint8)
+        red_lower = np.array([136, 87, 150], np.uint8)
         red_upper = np.array([180, 200, 200], np.uint8)
         red_mask = cv2.inRange(hsvFrame, red_lower, red_upper)
     
         # Set range for green color and 
         # define mask
-        green_lower = np.array([25, 52, 72], np.uint8)
+        green_lower = np.array([25, 52, 150], np.uint8)
         green_upper = np.array([102, 200, 200], np.uint8)
         green_mask = cv2.inRange(hsvFrame, green_lower, green_upper)
     
         # Set range for blue color and
         # define mask
-        blue_lower = np.array([94, 80, 2], np.uint8)
+        blue_lower = np.array([94, 80, 150], np.uint8)
         blue_upper = np.array([120, 200, 200], np.uint8)
         blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
 
         #Set Range for yellow color and define mask
-        yellow_lower = np.array([0,51,51],np.uint8)
+        yellow_lower = np.array([0,51,150],np.uint8)
         yellow_upper = np.array([204,200,200],np.uint8)
         yellow_mask = cv2.inRange(hsvFrame, yellow_lower, yellow_upper)
         
