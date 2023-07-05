@@ -17,6 +17,7 @@ class VideoStreaming:
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
+        self.color='empty'
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -114,6 +115,7 @@ class VideoStreaming:
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 300):
+                self.color = 'red'
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 
