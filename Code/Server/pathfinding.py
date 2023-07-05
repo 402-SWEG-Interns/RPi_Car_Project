@@ -60,6 +60,8 @@ def main():
         tF = -900
         # Inside/Outside
         io = True # Inside = False ; Outside = True
+        # Counter
+        tick = 0
 
 
 
@@ -148,6 +150,7 @@ def main():
                     LMRs = True
                     NULs = False
                     PWM.setMotorModel(0,0,0,0)
+                    hardcode(tick)
             elif LMR==2: # Middle Sensor
                 if Ms == False:
                     print('\nMiddle Sensor Detected\nStopping Car')
@@ -160,6 +163,7 @@ def main():
                     LMRs = False
                     NULs = False
                     PWM.setMotorModel(0,0,0,0)
+                    hardcode(tick)
 
 
 
@@ -204,6 +208,49 @@ def main():
 #     except KeyboardInterrupt:   # Ctrl+C
 #         print('Function: test()\nStatus:   inactive')
 #         PWM.setMotorModel(0,0,0,0)
+
+# harcode() --- This is called when all sensors are triggered, or the middle sensor alone is triggered
+def hardcode(tick):
+    try:
+        time.sleep(1)
+
+
+
+        PWM.setMotorModel(-600,-600,-600,-600)
+        time.sleep(0.25)
+
+
+
+        PWM.setMotorModel(0,0,0,0)
+        time.sleep(1)
+
+
+
+        if   tick == 0 or tick == 1: # Turn Right - 90 Degrees Approx.
+            PWM.setMotorModel(2000,2000,-2000,-2000)
+            time.sleep(0.9)
+
+            PWM.setMotorModel(0,0,0,0)
+            time.sleep(1)
+        
+
+
+        elif tick == 2: # Turn Left - 90 Degrees Approx.
+            PWM.setMotorModel(-2000,-2000,2000,2000)
+            time.sleep(0.9)
+
+            PWM.setMotorModel(0,0,0,0)
+            time.sleep(1)
+        
+
+
+        else: # Idk, break program for now
+            PWM.setMotorModel(0,0,0,0)
+            print('An unexpected error occurred')
+            KeyboardInterrupt
+    except KeyboardInterrupt:
+        PWM.setMotorModel(0,0,0,0)
+        print('An unexpected error has occurred')
 
 
 
