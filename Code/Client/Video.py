@@ -81,8 +81,8 @@ class VideoStreaming:
         blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
 
         #Set Range for yellow color and define mask
-        yellow_lower = np.array([51,51,0],np.uint8)
-        yellow_upper = np.array([255,255,204],np.uint8)
+        yellow_lower = np.array([0,51,51],np.uint8)
+        yellow_upper = np.array([204,255,255],np.uint8)
         yellow_mask = cv2.inRange(hsvFrame, yellow_lower, yellow_upper)
         
         # Morphological Transform, Dilation
