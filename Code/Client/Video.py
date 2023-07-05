@@ -148,7 +148,7 @@ class VideoStreaming:
             area = cv2.contourArea(contour)
             if (area> 300):
                 x,y,w,h = cv2.boundingRect(contour)
-                img = cv2.rectangle(img, (x,y), (x+w,y+h), (255,255,0),2)
+                img = cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,255),2)
 
                 cv2.putText(img, "Yellow Color", (x,y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255,255))
 
