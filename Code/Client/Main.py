@@ -618,6 +618,49 @@ class mywindow(QMainWindow,Ui_Client):
             else:
                 self.HSlider_Servo1.setValue(int(self.servo1))
                 self.VSlider_Servo2.setValue(int(self.servo2))
+
+
+    def colorDetect(self): 
+
+        leds = (str(0x01),str(0x02),str(0x04),str(0x08),str(0x10),str(0x20),str(0x40),str(0x80)) 
+        R = self.Color_R.text() 
+        G = self.Color_G.text() 
+        B = self.Color_B.text() 
+        color = self.intervalChar + str(R) + self.intervalChar + str(G) + self.intervalChar + str(B) + self.endChar 
+
+        # Red LED 
+
+        if all(x < self.TCP.redArea for x in (self.TCP.blueArea, self.TCP.yellowArea, self.TCP.greenArea)): 
+            color  = self.intervalChar + str(255) + self.intervalChar + str(0) + self.intervalChar + str(0) + self.endChar 
+
+            for x in leds: 
+                self.led_Index = x 
+                self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
+         
+        # Blue LED 
+        if all(x < self.TCP.blueArea for x in (self.TCP.redArea, self.TCP.yellowArea, self.TCP.greenArea)): 
+            color  = self.intervalChar + str(0) + self.intervalChar + str(0) + self.intervalChar + str(255) + self.endChar 
+
+            for x in leds: 
+                self.led_Index = x 
+                self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
+
+        # Green LED 
+        if all(x < self.TCP.greenArea for x in (self.TCP.blueArea, self.TCP.yellowArea, self.TCP.redArea)): 
+            color  = self.intervalChar + str(0) + self.intervalChar + str(255) + self.intervalChar + str(0) + self.endChar 
+
+            for x in leds: 
+                self.led_Index = x 
+                self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
+
+        # Yellow LED 
+        if all(x < self.TCP.yellowArea for x in (self.TCP.blueArea, self.TCP.redArea, self.TCP.greenArea)): 
+            color  = self.intervalChar + str(255) + self.intervalChar + str(255) + self.intervalChar + str(0) + self.endChar 
+
+            for x in leds: 
+                self.led_Index = x 
+                self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color)
+
     def time(self):
         self.TCP.video_Flag=False
         try:
@@ -625,6 +668,7 @@ class mywindow(QMainWindow,Ui_Client):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-Off":
                         self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                        self.colorDetect()
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
