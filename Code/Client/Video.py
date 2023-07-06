@@ -115,7 +115,7 @@ class VideoStreaming:
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 300):
-                self.color = 'red'
+                self.color ='red'
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 
@@ -127,6 +127,7 @@ class VideoStreaming:
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 300):
+                self.color='green'
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 
@@ -138,6 +139,7 @@ class VideoStreaming:
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 300):
+                self.color='blue'
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y),(x + w, y + h),(255, 0, 0), 2)
                 
@@ -149,6 +151,7 @@ class VideoStreaming:
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if (area> 300):
+                self.color='yellow'
                 x,y,w,h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,255),2)
 

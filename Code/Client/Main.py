@@ -401,13 +401,13 @@ class mywindow(QMainWindow,Ui_Client):
         G=self.Color_G.text()
         B=self.Color_B.text()
         led_Off=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
-        color=self.intervalChar+str(R)+self.intervalChar+str(G)+self.intervalChar+str(B)+self.endChar
+        color=self.intervalChar+str(R)+self.intervalChar+str(G)+self.intervalChar+str(B)+self.endChar # def color
         if b.text() == "Led1":
            self.led_Index=str(0x01)
            if b.isChecked() == True:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color) # turn on color
            else:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
+               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off) # turn off color
         if b.text() == "Led2":
            self.led_Index=str(0x02)
            if b.isChecked() == True:
@@ -625,9 +625,28 @@ class mywindow(QMainWindow,Ui_Client):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-Off":
                         self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                        self.color_Area()
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
+    def color_Area(self):
+        self.led_Index=str(0x01)
+        color=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
+        if self.TCP.color == 'empty':
+           self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+        if self.TCP.color == 'red':
+            color=self.intervalChar+str(255)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
+            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+        if self.TCP.color == 'blue':
+            color=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(255)+self.endChar
+            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+        if self.TCP.color == 'green':
+            color=self.intervalChar+str(0)+self.intervalChar+str(255)+self.intervalChar+str(0)+self.endChar
+            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+        if self.TCP.color == 'yellow':
+            color=self.intervalChar+str(255)+self.intervalChar+str(200)+self.intervalChar+str(0)+self.endChar
+            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+           
         
             
 if __name__ == '__main__':
