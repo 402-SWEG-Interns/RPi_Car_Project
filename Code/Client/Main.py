@@ -630,22 +630,31 @@ class mywindow(QMainWindow,Ui_Client):
             print(e)
         self.TCP.video_Flag=True
     def color_Area(self):
+        leds = ['0x01','0x02','0x03','0x04','0x05','0x06','0x07','0x08']
         self.led_Index=str(0x01)
         color=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
         if self.TCP.color == 'empty':
            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
         if self.TCP.color == 'red':
-            color=self.intervalChar+str(255)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
-            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+            for led in leds:
+                self.led_Index=led
+                color=self.intervalChar+str(255)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
+                self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
         if self.TCP.color == 'blue':
-            color=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(255)+self.endChar
-            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+            for led in leds:
+                self.led_Index=led
+                color=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(255)+self.endChar
+                self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
         if self.TCP.color == 'green':
-            color=self.intervalChar+str(0)+self.intervalChar+str(255)+self.intervalChar+str(0)+self.endChar
-            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+            for led in leds:
+                self.led_Index=led
+                color=self.intervalChar+str(0)+self.intervalChar+str(255)+self.intervalChar+str(0)+self.endChar
+                self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
         if self.TCP.color == 'yellow':
-            color=self.intervalChar+str(255)+self.intervalChar+str(200)+self.intervalChar+str(0)+self.endChar
-            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+            for led in leds:
+                self.led_Index=led
+                color=self.intervalChar+str(255)+self.intervalChar+str(200)+self.intervalChar+str(0)+self.endChar
+                self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
            
         
             
