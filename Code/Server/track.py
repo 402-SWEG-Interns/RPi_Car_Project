@@ -1,7 +1,7 @@
 import time
 from PCA9685 import PCA9685
 from Motor import Motor
-from Line_Avoidance import Line_Tracking
+from line_avoidance import Line_Tracking
 import RPi.GPIO as GPIO
 
 
