@@ -601,10 +601,10 @@ class mywindow(QMainWindow,Ui_Client):
         return bValid
 
     def Tracking_Face(self):
-        if self.Btn_Tracking_Faces.text()=="Tracing-On":
-            self.Btn_Tracking_Faces.setText("Tracing-Off")
+        if self.Btn_Tracking_Faces.text()=="Color Blind Trae":
+            self.Btn_Tracking_Faces.setText("He off")
         else:
-            self.Btn_Tracking_Faces.setText("Tracing-On")
+            self.Btn_Tracking_Faces.setText("Color Blind Trae")
     def find_Face(self,face_x,face_y):
         if face_x!=0 and face_y!=0:
             offset_x=float(face_x/400-0.5)*2
@@ -634,7 +634,7 @@ class mywindow(QMainWindow,Ui_Client):
             color  = self.intervalChar + str(255) + self.intervalChar + str(0) + self.intervalChar + str(0) + self.endChar 
 
             for x in leds: 
-                self.led_Index = x 
+                self.led_Index = x             
                 self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
          
         # Blue LED 
@@ -666,8 +666,8 @@ class mywindow(QMainWindow,Ui_Client):
         try:
             if  self.is_valid_jpg('video.jpg'):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
-                if self.Btn_Tracking_Faces.text()=="Tracing-Off":
-                        self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                if self.Btn_Tracking_Faces.text()=="He off":
+                        #self.find_Face(self.TCP.face_x,self.TCP.face_y)
                         self.colorDetect()
         except Exception as e:
             print(e)

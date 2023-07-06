@@ -17,10 +17,15 @@ class VideoStreaming:
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
+        self.redArea = 0
+        self.blueArea = 0
+        self.greenArea = 0
+        self.yellowArea = 0
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     def StopTcpcClient(self):
+
         try:
             self.client_socket.shutdown(2)
             self.client_socket1.shutdown(2)
@@ -71,7 +76,8 @@ class VideoStreaming:
                 if self.IsValidImage4Bytes(jpg):
                             image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                             if self.video_Flag:
-                                self.face_detect(image)
+                                self.ColorDetect(image) ##9483273984329849238379
+                                # self.face_detect(image)
                                 self.video_Flag=False
             except Exception as e:
                 print (e)
@@ -99,197 +105,190 @@ class VideoStreaming:
             self.connect_Flag=False
 
     def ColorDetect(self,img): 
+        # if sys.platform.startswith('win') or sys.platform.startswith('darwin'): 
 
-        if sys.platform.startswith('win') or sys.platform.startswith('darwin'): 
+        hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
 
-            hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
 
- 
- 
 
-            red_lower = np.array([136,87,111], np.uint8) 
 
-            red_upper = np.array([180,255,255], np.uint8) 
+        red_lower = np.array([136,87,111], np.uint8) 
 
-            red_mask = cv2.inRange(hsvFrame, red_lower, red_upper) 
+        red_upper = np.array([180,255,255], np.uint8) 
 
- 
- 
+        red_mask = cv2.inRange(hsvFrame, red_lower, red_upper) 
 
-            green_lower = np.array([25,52,72], np.uint8) 
 
-            green_upper = np.array([102,255,255], np.uint8) 
 
-            green_mask = cv2.inRange(hsvFrame, green_lower, green_upper) 
 
- 
- 
+        green_lower = np.array([82,255,0], np.uint8) 
 
-            blue_lower = np.array([94,80,2], np.uint8) 
+        green_upper = np.array([83,255,79], np.uint8) 
 
-            blue_upper = np.array([120,255,255], np.uint8) 
+        green_mask = cv2.inRange(hsvFrame, green_lower, green_upper) 
 
-            blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper) 
 
- 
- 
 
-            yellow_lower = np.array([136,87,111], np.uint8) 
 
-            yellow_upper = np.array([180,255,255], np.uint8) 
+        blue_lower = np.array([0,194,254], np.uint8) 
 
-            yellow_mask = cv2.inRange(hsvFrame, yellow_lower, yellow_upper) 
+        blue_upper = np.array([120.255,255], np.uint8) 
 
- 
- 
+        blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper) 
 
-            kernel = np.ones((5,5), "uint8") 
 
- 
- 
 
-            red_mask = cv2.dilate(red_mask, kernel) 
 
-            res_red = cv2.bitwise_and(img, img, 
+        yellow_lower = np.array([189,255,0], np.uint8) 
 
-                                      mask = red_mask) 
+        yellow_upper = np.array([255,249,0], np.uint8) 
 
-             
+        yellow_mask = cv2.inRange(hsvFrame, yellow_lower, yellow_upper) 
 
-            green_mask = cv2.dilate(green_mask, kernel) 
 
-            res_green = cv2.bitwise_and(img, img, 
 
-                                      mask = green_mask) 
 
-             
+        kernel = np.ones((5,5), "uint8") 
 
-            blue_mask = cv2.dilate(blue_mask, kernel) 
 
-            res_blue = cv2.bitwise_and(img, img, 
 
-                                      mask = blue_mask) 
 
-             
+        red_mask = cv2.dilate(red_mask, kernel) 
 
-            yellow_mask = cv2.dilate(yellow_mask, kernel) 
+        res_red = cv2.bitwise_and(img, img, 
 
-            res_yellow = cv2.bitwise_and(img, img, 
+                                mask = red_mask) 
 
-                                      mask = yellow_mask) 
+        
 
-             
+        green_mask = cv2.dilate(green_mask, kernel) 
 
- 
- 
+        res_green = cv2.bitwise_and(img, img, 
 
-            contours, hiearchy = cv2.findContours(red_mask, 
+                                mask = green_mask) 
 
-                                                  cv2.RETR_TREE, 
+        
 
-                                                  cv2.CHAIN_APPROX_SIMPLE) 
+        blue_mask = cv2.dilate(blue_mask, kernel) 
 
-            for pic, contour in enumerate(contours): 
+        res_blue = cv2.bitwise_and(img, img, 
 
-                area = cv2.contourArea(contour) 
+                                mask = blue_mask) 
 
-                if(area > 300): 
+        
 
-                    x,y,w,h = cv2.boundingRect(contour) 
+        yellow_mask = cv2.dilate(yellow_mask, kernel) 
 
-                    img = cv2.rectangle(img, (x,y), 
+        res_yellow = cv2.bitwise_and(img, img, 
 
-                                        (x + w, y + h), 
+                                mask = yellow_mask) 
 
-                                        (0,0,255), 2) 
+        
 
-                    cv2.putText(img, "Red Color", (x,y), 
 
-                                cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
 
-                                (0,0,255)) 
 
-                     
+        contours, hiearchy = cv2.findContours(red_mask, 
 
-            contours, hiearchy = cv2.findContours(green_mask, 
+                                            cv2.RETR_TREE, 
 
-                                                  cv2.RETR_TREE, 
+                                            cv2.CHAIN_APPROX_SIMPLE) 
 
-                                                  cv2.CHAIN_APPROX_SIMPLE) 
+        for pic, contour in enumerate(contours): 
 
-            for pic, contour in enumerate(contours): 
+            area = cv2.contourArea(contour) 
 
-                area = cv2.contourArea(contour) 
+            if(area > 300): 
 
-                if(area > 300): 
+                x,y,w,h = cv2.boundingRect(contour) 
 
-                    x,y,w,h = cv2.boundingRect(contour) 
+                img = cv2.rectangle(img, (x,y), 
 
-                    img = cv2.rectangle(img, (x,y), 
+                                    (x + w, y + h), 
 
-                                        (x + w, y + h), 
+                                    (0,0,255), 2) 
 
-                                        (0,255,0), 2) 
+                cv2.putText(img, "Red Color", (x,y), 
 
-                    cv2.putText(img, "Green Color", (x,y), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
 
-                                cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
+                            (0,0,255)) 
 
-                                (0,255,0)) 
+                
 
-                     
+        contours, hiearchy = cv2.findContours(green_mask, 
 
- 
- 
+                                            cv2.RETR_TREE, 
 
-            contours, hiearchy = cv2.findContours(blue_mask, 
+                                            cv2.CHAIN_APPROX_SIMPLE) 
 
-                                                  cv2.RETR_TREE, 
+        for pic, contour in enumerate(contours): 
 
-                                                  cv2.CHAIN_APPROX_SIMPLE) 
+            area = cv2.contourArea(contour) 
 
-            for pic, contour in enumerate(contours): 
+            if(area > 300): 
 
-                area = cv2.contourArea(contour) 
+                x,y,w,h = cv2.boundingRect(contour) 
 
-                if(area > 300): 
+                img = cv2.rectangle(img, (x,y), 
 
-                    x,y,w,h = cv2.boundingRect(contour) 
+                                    (x + w, y + h), 
 
-                    img = cv2.rectangle(img, (x,y), 
+                                    (0,255,0), 2) 
 
-                                        (x + w, y + h), 
+                cv2.putText(img, "Green Color", (x,y), 
 
-                                        (255,0,0), 2) 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
 
-                    cv2.putText(img, "Blue Color", (x,y), 
+                            (0,255,0)) 
 
-                                cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
+                
 
-                                (255,0,0)) 
 
-                     
 
-            contours, hiearchy = cv2.findContours(yellow_mask,cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
 
-            for pic, contour in enumerate(contours): 
-                area = cv2.contourArea(contour) 
-                if(area > 300): 
-                    x,y,w,h = cv2.boundingRect(contour)
-                    img = cv2.rectangle(img, (x,y), (x + w, y + h), (0,0,255), 2) 
-                    cv2.putText(img, "Yellow Color", (x,y), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
-                                (0,0,255)) 
-            # cv2.imshow("Multiple Color Detection in Real-Time", img) 
+        contours, hiearchy = cv2.findContours(blue_mask, 
 
-            # if cv2.waitKey(10) & 0xFF == ord('q'): 
+                                            cv2.RETR_TREE, 
 
-            #     cap.release() 
+                                            cv2.CHAIN_APPROX_SIMPLE) 
 
-            #     cv2.destroyAllWindows() 
+        for pic, contour in enumerate(contours): 
 
-            #     break 
-            cv2.imwrite('video.jpg', img) 
+            area = cv2.contourArea(contour) 
+
+            if(area > 300): 
+
+                x,y,w,h = cv2.boundingRect(contour) 
+
+                img = cv2.rectangle(img, (x,y), 
+
+                                    (x + w, y + h), 
+
+                                    (255,0,0), 2) 
+
+                cv2.putText(img, "Blue Color", (x,y), 
+
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
+
+                            (255,0,0)) 
+
+                
+
+        contours, hiearchy = cv2.findContours(yellow_mask,cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
+
+        for pic, contour in enumerate(contours): 
+            area = cv2.contourArea(contour) 
+            if(area > 300): 
+                x,y,w,h = cv2.boundingRect(contour)
+                img = cv2.rectangle(img, (x,y), (x + w, y + h), (0,255,255), 2) 
+                cv2.putText(img, "Yellow Color", (x,y), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
+                            (0,0,255)) 
+                
+        cv2.imshow("Multiple Color Detection in Real-Time", img) 
+        cv2.imwrite('video.jpg', img) 
+        
 
  
 
