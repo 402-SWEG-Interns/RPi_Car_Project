@@ -11,8 +11,10 @@ class Line_Tracking:
         GPIO.setup(self.IR02,GPIO.IN)
         GPIO.setup(self.IR03,GPIO.IN)
     def run(self):
-        while True:
-            self.LMR=0x00
+    
+        self.LMR=0x00
+        while self.LMR != 7:
+            self.LMR=0x00   
             if GPIO.input(self.IR01)==True:
                 self.LMR=(self.LMR | 4)
             if GPIO.input(self.IR02)==True:
@@ -21,17 +23,136 @@ class Line_Tracking:
                 self.LMR=(self.LMR | 1)
             if self.LMR==2:
                 PWM.setMotorModel(800,800,800,800)
-            elif self.LMR==4:
-                PWM.setMotorModel(-1500,-1500,2500,2500)
-            elif self.LMR==6:
-                PWM.setMotorModel(-2000,-2000,4000,4000)
             elif self.LMR==1:
-                PWM.setMotorModel(2500,2500,-1500,-1500)
+                PWM.setMotorModel(-1500,-1500,2500,2500)
             elif self.LMR==3:
+                PWM.setMotorModel(-2000,-2000,4000,4000)
+            elif self.LMR==4:
+                PWM.setMotorModel(2500,2500,-1500,-1500)
+            elif self.LMR==6:
                 PWM.setMotorModel(4000,4000,-2000,-2000)
-            elif self.LMR==7:
+            elif self.LMR==0:
                 #pass
-                PWM.setMotorModel(400,400,400,400)
+                PWM.setMotorModel(800,800,800,800)
+
+
+        PWM.setMotorModel(0,0,0,0)
+        PWM.setMotorModel(-1000,-1000,-1000,-1000)
+        time.sleep(.1)
+        PWM.setMotorModel(1000,1000,-1000,-1000)
+        time.sleep(1.5)
+
+
+        self.LMR=0x00
+        while self.LMR != 7:
+            self.LMR=0x00   
+            if GPIO.input(self.IR01)==True:
+                self.LMR=(self.LMR | 4)
+            if GPIO.input(self.IR02)==True:
+                self.LMR=(self.LMR | 2)
+            if GPIO.input(self.IR03)==True:
+                self.LMR=(self.LMR | 1)
+            if self.LMR==2:
+                PWM.setMotorModel(800,800,800,800)
+            elif self.LMR==1:
+                PWM.setMotorModel(-1500,-1500,2500,2500)
+            elif self.LMR==3:
+                PWM.setMotorModel(-2000,-2000,4000,4000)
+            elif self.LMR==4:
+                PWM.setMotorModel(2500,2500,-1500,-1500)
+            elif self.LMR==6:
+                PWM.setMotorModel(4000,4000,-2000,-2000)
+            elif self.LMR==0:
+                #pass
+                PWM.setMotorModel(800,800,800,800)
+
+        PWM.setMotorModel(0,0,0,0)
+        PWM.setMotorModel(-1000,-1000,-1000,-1000)
+        time.sleep(.3)
+        PWM.setMotorModel(1000,1000,-1000,-1000)
+        time.sleep(1.5)
+
+        self.LMR=0x00
+        while self.LMR != 7:
+            self.LMR=0x00   
+            if GPIO.input(self.IR01)==True:
+                self.LMR=(self.LMR | 4)
+            if GPIO.input(self.IR02)==True:
+                self.LMR=(self.LMR | 2)
+            if GPIO.input(self.IR03)==True:
+                self.LMR=(self.LMR | 1)
+            if self.LMR==2:
+                PWM.setMotorModel(800,800,800,800)
+            elif self.LMR==1:
+                PWM.setMotorModel(-1500,-1500,2500,2500)
+            elif self.LMR==3:
+                PWM.setMotorModel(-2000,-2000,4000,4000)
+            elif self.LMR==4:
+                PWM.setMotorModel(2500,2500,-1500,-1500)
+            elif self.LMR==6:
+                PWM.setMotorModel(4000,4000,-2000,-2000)
+            elif self.LMR==0:
+                #pass
+                PWM.setMotorModel(800,800,800,800)
+
+        PWM.setMotorModel(0,0,0,0)
+        PWM.setMotorModel(-1000,-1000,-1000,-1000)
+        time.sleep(.2)
+        PWM.setMotorModel(-1000,-1000,1000,1000)
+        time.sleep(1)
+
+        count = 0
+        self.LMR=0x00
+        while True:
+            self.LMR=0x00   
+            if GPIO.input(self.IR01)==True:
+                self.LMR=(self.LMR | 4)
+            if GPIO.input(self.IR02)==True:
+                self.LMR=(self.LMR | 2)
+            if GPIO.input(self.IR03)==True:
+                self.LMR=(self.LMR | 1)
+            if self.LMR==2:
+                PWM.setMotorModel(800,800,800,800)
+            elif self.LMR==1:
+                PWM.setMotorModel(-1000,-1000,-1000,-1000)
+                time.sleep(.2)
+                PWM.setMotorModel(-1500,-1500,2500,2500)
+                time.sleep(.2)
+
+            elif self.LMR==3:
+                PWM.setMotorModel(-1000,-1000,-1000,-1000)
+                time.sleep(.2)
+                PWM.setMotorModel(-2000,-2000,4000,4000)
+                time.sleep(.2)
+                
+            elif self.LMR==4:
+                PWM.setMotorModel(-1000,-1000,-1000,-1000)
+                time.sleep(.2)
+                PWM.setMotorModel(2500,2500,-1500,-1500)
+                time.sleep(.2)
+                
+            elif self.LMR==6:
+                PWM.setMotorModel(-1000,-1000,-1000,-1000)
+                time.sleep(.2)
+                PWM.setMotorModel(4000,4000,-2000,-2000)
+                time.sleep(.2)
+                
+            elif self.LMR==0:
+                #pass
+                PWM.setMotorModel(800,800,800,800)
+
+            count = count + 1
+            if count == 850:
+                break
+            
+
+        PWM.setMotorModel(-2500,-2500,1500,1500)
+        time.sleep(5)
+        PWM.setMotorModel(0,0,0,0)
+
+
+
+
             
 infrared=Line_Tracking()
 # Main program logic follows:
