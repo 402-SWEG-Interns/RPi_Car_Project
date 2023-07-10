@@ -11,13 +11,14 @@ class Line_Tracking:
         GPIO.setup(self.IR02,GPIO.IN)
         GPIO.setup(self.IR03,GPIO.IN)
     def run(self):
+        PWM.setMotorModel(1000,1000,1000,1000)
         while True:
             self.LMR=0x00
-            if GPIO.input(self.IR01)==True:
+            if GPIO.input(self.IR01)==False: # Initially True
                 self.LMR=(self.LMR | 4)
-            if GPIO.input(self.IR02)==True:
+            if GPIO.input(self.IR02)==False: # Initially True
                 self.LMR=(self.LMR | 2)
-            if GPIO.input(self.IR03)==True:
+            if GPIO.input(self.IR03)==False: # Initially True
                 self.LMR=(self.LMR | 1)
             if self.LMR==2:
                 PWM.setMotorModel(800,800,800,800)
