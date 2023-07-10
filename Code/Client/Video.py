@@ -157,9 +157,14 @@ class VideoStreaming:
                 self.face_y = float(ymin+ymax/2)
 
             else:
-                self.face_x=0
-                self.face_y=0
-        cv2.imwrite('video.jpg',img)
+                Stop = '#0#0#0#0\n'
+                self.sendData(cmd.CMD_MOTOR+Stop)
+                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
+
+            # Draw framerate in corner of frame
+            cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        
+        cv2.imwrite('video.jpg', frame)
             
             
     def color_detect(self,img):
@@ -289,8 +294,8 @@ class VideoStreaming:
                 if self.IsValidImage4Bytes(jpg):
                             image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                             if self.video_Flag:
-                                #self.face_detect(image)
-                                self.color_detect(image)
+                                self.face_detect(image)
+                                #self.color_detect(image)
                                 self.video_Flag=False
             except Exception as e:
                 print (e)
