@@ -150,10 +150,14 @@ class VideoStreaming:
                 self.face_y = float(ymin+ymax/2)
 
             else:
-<<<<<<< HEAD
-                self.face_x=0
-                self.face_y=0
-        cv2.imwrite('video.jpg',img)
+                Stop = '#0#0#0#0\n'
+                self.sendData(cmd.CMD_MOTOR+Stop)
+                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
+
+            # Draw framerate in corner of frame
+            cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        
+        cv2.imwrite('video.jpg', frame)
     
     def color_detect(self,img): # Note that RGB is backwards in this function. Instead, it is BGR, so invert where you put your values.
         # Convert the img in 
@@ -257,16 +261,6 @@ class VideoStreaming:
         cv2.imwrite('green.jpg',res_green)
         cv2.imwrite('blue.jpg',res_blue)
         cv2.imwrite('yellow.jpg',res_yellow)
-=======
-                Stop = '#0#0#0#0\n'
-                self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
-
-            # Draw framerate in corner of frame
-            cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-        
-        cv2.imwrite('video.jpg', frame)
->>>>>>> 24c17c7747106aa4e74e87438a411e7fabbb394a
         
     def streaming(self,ip):
         stream_bytes = b' '
