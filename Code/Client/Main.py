@@ -480,7 +480,8 @@ class mywindow(QMainWindow,Ui_Client):
                self.checkBox_Led_Mode2.setChecked(False)
                self.checkBox_Led_Mode3.setChecked(False)
                self.checkBox_Led_Mode1.setChecked(False)
-               self.TCP.sendData(cmd.CMD_LED_MOD+self.intervalChar+'4'+self.endChar)
+            #    self.TCP.sendData(cmd.CMD_LED_MOD+self.intervalChar+'4'+self.endChar)
+               self.W2() #raladsjkga;ljeioa;jg;ldsng;rijtseiojf;lidsjfoiaejf;ldsijf;leij
            else:
                self.TCP.sendData(cmd.CMD_LED_MOD+self.intervalChar+'0'+self.endChar)
 
@@ -623,14 +624,15 @@ class mywindow(QMainWindow,Ui_Client):
     def colorDetect(self): 
 
         leds = (str(0x01),str(0x02),str(0x04),str(0x08),str(0x10),str(0x20),str(0x40),str(0x80)) 
-        R = self.Color_R.text() 
-        G = self.Color_G.text() 
-        B = self.Color_B.text() 
-        color = self.intervalChar + str(R) + self.intervalChar + str(G) + self.intervalChar + str(B) + self.endChar 
+        # R = self.Color_R.text() 
+        # G = self.Color_G.text() 
+        # B = self.Color_B.text() 
+        # color = self.intervalChar + str(R) + self.intervalChar + str(G) + self.intervalChar + str(B) + self.endChar 
 
         # Red LED 
 
-        if all(x < self.TCP.redArea for x in (self.TCP.blueArea, self.TCP.yellowArea, self.TCP.greenArea)): 
+        # if all(x < self.TCP.redArea for x in (self.TCP.blueArea, self.TCP.yellowArea, self.TCP.greenArea)):
+        if self.TCP.lastSeen == 0: 
             color  = self.intervalChar + str(255) + self.intervalChar + str(0) + self.intervalChar + str(0) + self.endChar 
 
             for x in leds: 
@@ -638,7 +640,8 @@ class mywindow(QMainWindow,Ui_Client):
                 self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
          
         # Blue LED 
-        if all(x < self.TCP.blueArea for x in (self.TCP.redArea, self.TCP.yellowArea, self.TCP.greenArea)): 
+        # if all(x < self.TCP.blueArea for x in (self.TCP.redArea, self.TCP.yellowArea, self.TCP.greenArea)): 
+        if self.TCP.lastSeen == 2:
             color  = self.intervalChar + str(0) + self.intervalChar + str(0) + self.intervalChar + str(255) + self.endChar 
 
             for x in leds: 
@@ -646,15 +649,18 @@ class mywindow(QMainWindow,Ui_Client):
                 self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
 
         # Green LED 
-        if all(x < self.TCP.greenArea for x in (self.TCP.blueArea, self.TCP.yellowArea, self.TCP.redArea)): 
+        # if all(x < self.TCP.greenArea for x in (self.TCP.blueArea, self.TCP.yellowArea, self.TCP.redArea)): 
+        if self.TCP.lastSeen == 1:
             color  = self.intervalChar + str(0) + self.intervalChar + str(255) + self.intervalChar + str(0) + self.endChar 
 
             for x in leds: 
                 self.led_Index = x 
                 self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
+                
 
         # Yellow LED 
-        if all(x < self.TCP.yellowArea for x in (self.TCP.blueArea, self.TCP.redArea, self.TCP.greenArea)): 
+        # if all(x < self.TCP.yellowArea for x in (self.TCP.blueArea, self.TCP.redArea, self.TCP.greenArea)): 
+        if self.TCP.lastSeen == 3:
             color  = self.intervalChar + str(255) + self.intervalChar + str(255) + self.intervalChar + str(0) + self.endChar 
 
             for x in leds: 
@@ -668,7 +674,7 @@ class mywindow(QMainWindow,Ui_Client):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="He off":
                         #self.find_Face(self.TCP.face_x,self.TCP.face_y)
-                        self.colorDetect()
+                    self.colorDetect()
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True

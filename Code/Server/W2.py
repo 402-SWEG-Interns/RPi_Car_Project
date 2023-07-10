@@ -2,9 +2,7 @@ import time
 from Motor import *
 import RPi.GPIO as GPIO
 from Line_Tracking import *
-line=Line_Tracking()
-
-
+# line=Line_Trackingself
 
 class Line_Tracking:
     def __init__(self):
@@ -19,13 +17,13 @@ class Line_Tracking:
         while True:
             
             self.LMR=0x00
-            if GPIO.input(line.IR01)==True and GPIO.input(line.IR02)==True and GPIO.input(line.IR03)==True:
+            if GPIO.input(self.IR01)==True and GPIO.input(self.IR02)==True and GPIO.input(self.IR03)==True:
                 self.LMR=(self.LMR | 6)
-            if GPIO.input(line.IR01)!=True and GPIO.input(line.IR02)!=True and GPIO.input(line.IR03)!=True:
+            if GPIO.input(self.IR01)!=True and GPIO.input(self.IR02)!=True and GPIO.input(self.IR03)!=True:
                 self.LMR=(self.LMR | 7)
-            if GPIO.input(line.IR01)==True and GPIO.input(line.IR02)!=True and GPIO.input(line.IR03)!=True:
+            if GPIO.input(self.IR01)==True and GPIO.input(self.IR02)!=True and GPIO.input(self.IR03)!=True:
                 self.LMR=(self.LMR | 4)
-            if GPIO.input(line.IR01)!=True and GPIO.input(line.IR02)!=True and GPIO.input(line.IR03)==True:
+            if GPIO.input(self.IR01)!=True and GPIO.input(self.IR02)!=True and GPIO.input(self.IR03)==True:
                 self.LMR=(self.LMR | 1)
 
 
@@ -56,13 +54,13 @@ class Line_Tracking:
         while True:
             
             self.LMR=0x00
-            if GPIO.input(line.IR01)==True and GPIO.input(line.IR02)==True and GPIO.input(line.IR03)==True:
+            if GPIO.input(self.IR01)==True and GPIO.input(self.IR02)==True and GPIO.input(self.IR03)==True:
                 self.LMR=(self.LMR | 6)
-            if GPIO.input(line.IR01)!=True and GPIO.input(line.IR02)!=True and GPIO.input(line.IR03)!=True:
+            if GPIO.input(self.IR01)!=True and GPIO.input(self.IR02)!=True and GPIO.input(self.IR03)!=True:
                 self.LMR=(self.LMR | 7)
-            if GPIO.input(line.IR01)==True and GPIO.input(line.IR02)!=True and GPIO.input(line.IR03)!=True:
+            if GPIO.input(self.IR01)==True and GPIO.input(self.IR02)!=True and GPIO.input(self.IR03)!=True:
                 self.LMR=(self.LMR | 4)
-            if GPIO.input(line.IR01)!=True and GPIO.input(line.IR02)!=True and GPIO.input(line.IR03)==True:
+            if GPIO.input(self.IR01)!=True and GPIO.input(self.IR02)!=True and GPIO.input(self.IR03)==True:
                 self.LMR=(self.LMR | 1)
 
 
@@ -97,18 +95,18 @@ class Line_Tracking:
             # if GPIO.input(self.IR02)==False:
             #     self.LMR=(self.LMR | 2)
             # if GPIO.input(self.IR03)==False:
-            #     self.LMR=(self.LMR | 1)
+            #     self.LMR=(self.LMR self
 
 
-            if GPIO.input(line.IR01)==True and GPIO.input(line.IR02)==True and GPIO.input(line.IR03)==True:
+            if GPIO.input(self.IR01)==True and GPIO.input(self.IR02)==True and GPIO.input(self.IR03)==True:
                 self.LMR=(self.LMR | 6)
-            if GPIO.input(line.IR01)!=True and GPIO.input(line.IR02)!=True and GPIO.input(line.IR03)!=True:
+            if GPIO.input(self.IR01)!=True and GPIO.input(self.IR02)!=True and GPIO.input(self.IR03)!=True:
                 self.LMR=(self.LMR | 7)
-            if GPIO.input(line.IR01)==True and GPIO.input(line.IR02)!=True and GPIO.input(line.IR03)!=True:
+            if GPIO.input(self.IR01)==True and GPIO.input(self.IR02)!=True and GPIO.input(self.IR03)!=True:
                 self.LMR=(self.LMR | 4)
-            if GPIO.input(line.IR01)!=True and GPIO.input(line.IR02)!=True and GPIO.input(line.IR03)==True:
+            if GPIO.input(self.IR01)!=True and GPIO.input(self.IR02)!=True and GPIO.input(self.IR03)==True:
                 self.LMR=(self.LMR | 1)
-            if GPIO.input(line.IR01)!=True and GPIO.input(line.IR02)==True and GPIO.input(line.IR03)==True:
+            if GPIO.input(self.IR01)!=True and GPIO.input(self.IR02)==True and GPIO.input(self.IR03)==True:
                 self.LMR=(self.LMR | 1)
 
 
