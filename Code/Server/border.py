@@ -1,0 +1,1 @@
+# 'border.py' is a line tracking file that utilizes the RPi Car's infrared sensors to keep it inside the boundaries of the ring.
