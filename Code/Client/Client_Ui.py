@@ -168,6 +168,7 @@ class Ui_Client(object):
         self.name.setFont(font)
         self.name.setStyleSheet("")
         self.name.setObjectName("name")
+        
         self.Btn_Turn_Left = QtWidgets.QPushButton(Client)
         self.Btn_Turn_Left.setGeometry(QtCore.QRect(10, 510, 90, 30))
         font = QtGui.QFont()
@@ -176,6 +177,7 @@ class Ui_Client(object):
         self.Btn_Turn_Left.setFont(font)
         self.Btn_Turn_Left.setStyleSheet("")
         self.Btn_Turn_Left.setObjectName("Btn_Turn_Left")
+
         self.Btn_BackWard = QtWidgets.QPushButton(Client)
         self.Btn_BackWard.setGeometry(QtCore.QRect(120, 560, 90, 30))
         font = QtGui.QFont()
@@ -542,14 +544,14 @@ class Ui_Client(object):
 
         # custom button
 
-        self.Btn_Tracking_Colors = QtWidgets.QPushButton(Client)
-        self.Btn_Tracking_Colors.setGeometry(QtCore.QRect(230, 560, 90, 30))
+        self.Btn_runCourse = QtWidgets.QPushButton(Client)
+        self.Btn_runCourse.setGeometry(QtCore.QRect(230, 560, 90, 30))
         font = QtGui.QFont()
         font.setFamily("Malgun Gothic")
         font.setPointSize(10)
-        self.Btn_Tracking_Colors.setFont(font)
-        self.Btn_Tracking_Colors.setStyleSheet("")
-        self.Btn_Tracking_Colors.setObjectName("Btn_Tracking_Colors")
+        self.Btn_runCourse.setFont(font)
+        self.Btn_runCourse.setStyleSheet("")
+        self.Btn_runCourse.setObjectName("Btn_runCourse")
 
         self.Btn_Tracking_Faces = QtWidgets.QPushButton(Client)
         self.Btn_Tracking_Faces.setGeometry(QtCore.QRect(230, 460, 90, 30))
@@ -626,6 +628,6 @@ class Ui_Client(object):
         self.Btn_Mode3.setText(_translate("Client", "M-Sonic"))
         self.Btn_Mode4.setText(_translate("Client", "M-Line"))
         self.Btn_Tracking_Faces.setText(_translate("Client", "Tracing-On"))
-        self.Btn_Tracking_Colors.setText(_translate("Client", "Color-Track-False"))
+        self.Btn_runCourse.setText(_translate("Client", "Color-Track-False"))
         self.Ultrasonic.setText(_translate("Client", "Ultrasonic"))
         self.Light.setText(_translate("Client", "Light"))

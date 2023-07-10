@@ -135,7 +135,7 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Home.clicked.connect(self.on_btn_Home)
         self.Btn_Right.clicked.connect(self.on_btn_Right)
         self.Btn_Tracking_Faces.clicked.connect(self.Tracking_Face)
-        self.Btn_Tracking_Colors.clicked.connect(self.Follow_Color)
+        self.Btn_runCourse.clicked.connect(self.runCourse)
 
         self.Btn_Buzzer.pressed.connect(self.on_btn_Buzzer)
         self.Btn_Buzzer.released.connect(self.on_btn_Buzzer)
@@ -147,6 +147,7 @@ class mywindow(QMainWindow,Ui_Client):
         self.Window_Close.clicked.connect(self.close)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.time)
+
     def mousePressEvent(self, event):
         if event.button()==Qt.LeftButton:
             self.m_drag=True
@@ -533,6 +534,8 @@ class mywindow(QMainWindow,Ui_Client):
 
     def close(self):
         self.timer.stop()
+        color=self.intervalChar+str(255)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar        
+        self.TCP.sendData(cmd.CMD_LED+self.intervalChar+'0'+color)
         try:
             stop_thread(self.recv)
             stop_thread(self.streaming)
@@ -554,6 +557,7 @@ class mywindow(QMainWindow,Ui_Client):
             except:
                 break
     def recvmassage(self):
+            print("recv")
             self.TCP.socket1_connect(self.h)
             self.power=Thread(target=self.Power)
             self.power.start()
@@ -606,11 +610,13 @@ class mywindow(QMainWindow,Ui_Client):
         else:
             self.Btn_Tracking_Faces.setText("Tracing-On")
 
-    def Follow_Color(self,color_x,color_y):
-        if self.Btn_Tracking_Colors.text()=="Follow-False":
-            self.Btn_Tracking_Colors.setText("Follow-True")
+    def runCourse(self):
+        if self.Btn_runCourse.text()=="Follow-False":
+            self.Btn_runCourse.setText("Follow-True")
+            # self.courseRunner = Thread(target=)
         else:
-            self.Btn_Tracking_Colors.setText("Follow-False")
+            self.Btn_runCourse.setText("Follow-False")
+            # stop_thread(self.courseRunner)
 
     def find_Face(self,face_x,face_y):
         if face_x!=0 and face_y!=0:
@@ -622,25 +628,56 @@ class mywindow(QMainWindow,Ui_Client):
             self.servo2=self.servo2+delta_degree_y
             print(self.servo1, self.servo2)
             if offset_x > -0.15 and offset_y >-0.15 and offset_x < 0.15 and offset_y <0.15:
+                # self.led_Index=str(0x80)
+                # led_Off=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
+                # self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
                 pass
             else:
                 self.HSlider_Servo1.setValue(int(self.servo1))
                 self.VSlider_Servo2.setValue(int(self.servo2))
+                # self.led_Index=str(0x80)
+                # R= 255
+                # G= 0
+                # B= 0
+                # color=self.intervalChar+str(R)+self.intervalChar+str(G)+self.intervalChar+str(B)+self.endChar
+                # self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
     
 
-    def time(self):
+    def time(self):        
         self.TCP.video_Flag=False
         try:
             if self.is_valid_jpg('video.jpg'):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-On":
                     self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                    self.changeColor()
         except Exception as e:
             print("video.jpg")
             print(e)
         self.TCP.video_Flag=True
         
-            
+    def changeColor(self):
+        areas = [self.TCP.Rarea, self.TCP.Garea, self.TCP.Barea, self.TCP.Yarea]
+        maxColor = max(areas)
+        indexes = [str(0x10), str(0x20), str(0x40), str(0x80), str(0x01), str(0x02), str(0x04), str(0x08)]
+        if maxColor != 0:
+            if self.TCP.Rarea == maxColor and maxColor:
+                color=self.intervalChar+str(255)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
+                for b in indexes:
+                    self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ b+color)
+            if self.TCP.Barea == maxColor:
+                color=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(255)+self.endChar
+                for b in indexes:
+                    self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ b+color)
+            if self.TCP.Garea == maxColor:
+                color=self.intervalChar+str(0)+self.intervalChar+str(255)+self.intervalChar+str(0)+self.endChar
+                for b in indexes:
+                    self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ b+color)
+            if self.TCP.Yarea == maxColor:
+                color=self.intervalChar+str(255)+self.intervalChar+str(255)+self.intervalChar+str(0)+self.endChar
+                for b in indexes:
+                    self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ b+color)
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     myshow=mywindow()
