@@ -25,27 +25,43 @@ from Motor import *
 PWM=Motor()          
 def test_Motor(): 
     try:
-        PWM.setMotorModel(1000,1000,700,700)       #Forward
+        PWM.setMotorModel(1000,1000,650,650)       #Forward
         print ("The car is moving forward")
-        time.sleep(2.7)
+        time.sleep(3)
         PWM.setMotorModel(2000,2000,-1500,-1500)       #Right 
         print ("The car is turning right")  
-        time.sleep(.8)
+        time.sleep(.9)
         PWM.setMotorModel(1000,1000,800,800)       #Forward
         print ("The car is moving forward")
-        time.sleep(.5)
+        time.sleep(.3)
         PWM.setMotorModel(2000,2000,-1500,-1500)       #Right 
         print ("The car is turning right")  
+        time.sleep(1)
+        PWM.setMotorModel(1000,1000,800,800)       #Forward
+        print ("The car is moving forward")
+        time.sleep(2)
+        PWM.setMotorModel(-1500,-1500,2000,2000)       #Left 
+        print ("The car is turning left")
         time.sleep(.6)
         PWM.setMotorModel(1000,1000,800,800)       #Forward
         print ("The car is moving forward")
-        time.sleep(1.8)
+        time.sleep(.6)
+        PWM.setMotorModel(-1500,-1500,2000,2000)       #Left 
+        print ("The car is turning left")
+        time.sleep(.6)
+        PWM.setMotorModel(1000,1000,800,800)       #Forward
+        print ("The car is moving forward")
+        time.sleep(2)
+        PWM.setMotorModel(-1500,-1500,2000,2000)       #Left 
+        print ("The car is turning left")
+        time.sleep(.2)
+        PWM.setMotorModel(1000,1000,800,800)       #Forward
+        print ("The car is moving forward")
+        time.sleep(3)
         # PWM.setMotorModel(-1000,-1000,-1000,-1000)   #Back
         # print ("The car is going backwards")
         # time.sleep(1)
-        # PWM.setMotorModel(-1500,-1500,2000,2000)       #Left 
-        # print ("The car is turning left")
-        # time.sleep(1)
+        
         
         PWM.setMotorModel(0,0,0,0)                   #Stop
         print ("\nEnd of program")
