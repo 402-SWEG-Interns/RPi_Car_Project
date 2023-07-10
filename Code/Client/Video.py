@@ -17,6 +17,13 @@ class VideoStreaming:
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
+
+        self.Rarea = 0
+        self.Garea = 0
+        self.Barea = 0
+        self.Yarea = 0
+
+
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,7 +64,7 @@ class VideoStreaming:
 
 
     # thanks Padraig for the code
-    
+
     def color_detect(self, img):
         hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
   
@@ -69,8 +76,8 @@ class VideoStreaming:
     
         # Set range for green color and 
         # define mask
-        green_lower = np.array([25, 52, 72], np.uint8)
-        green_upper = np.array([102, 255, 255], np.uint8)
+        green_lower = np.array([45, 100, 72], np.uint8)
+        green_upper = np.array([90, 255, 255], np.uint8)
         green_mask = cv2.inRange(hsvFrame, green_lower, green_upper)
     
         # Set range for blue color and
@@ -78,6 +85,12 @@ class VideoStreaming:
         blue_lower = np.array([94, 80, 2], np.uint8)
         blue_upper = np.array([120, 255, 255], np.uint8)
         blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
+
+        # Set range for yellow color and
+        # define mask
+        yellow_lower = np.array([25, 50, 70], np.uint8)
+        yellow_upper = np.array([35, 255, 255], np.uint8)
+        yellow_mask = cv2.inRange(hsvFrame, yellow_lower, yellow_upper)
         
         # Morphological Transform, Dilation
         # for each color and bitwise_and operator
@@ -99,15 +112,25 @@ class VideoStreaming:
         blue_mask = cv2.dilate(blue_mask, kernel)
         res_blue = cv2.bitwise_and(img, img,
                                 mask = blue_mask)
+        
+         # For yellow color
+        yellow_mask = cv2.dilate(yellow_mask, kernel)
+        res_yellow = cv2.bitwise_and(img, img,
+                                mask = yellow_mask)
     
         # Creating contour to track red color
         contours, hierarchy = cv2.findContours(red_mask,
                                             cv2.RETR_TREE,
                                             cv2.CHAIN_APPROX_SIMPLE)
         
+
+        # area of the colors detected
+        colored = False
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 300):
+                colored = True
+                self.Rarea += area
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y), 
                                         (x + w, y + h), 
@@ -116,15 +139,19 @@ class VideoStreaming:
                 cv2.putText(img, "Red Colour", (x, y),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.0,
                             (0, 0, 255))    
-    
+        if not colored:
+            self.Rarea = 0
         # Creating contour to track green color
+
         contours, hierarchy = cv2.findContours(green_mask,
                                             cv2.RETR_TREE,
                                             cv2.CHAIN_APPROX_SIMPLE)
-        
+        colored = False
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 300):
+                colored = True
+                self.Garea += area
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y), 
                                         (x + w, y + h),
@@ -133,14 +160,18 @@ class VideoStreaming:
                 cv2.putText(img, "Green Colour", (x, y),
                             cv2.FONT_HERSHEY_SIMPLEX, 
                             1.0, (0, 255, 0))
-    
+        if not colored:
+            self.Garea = 0
         # Creating contour to track blue color
         contours, hierarchy = cv2.findContours(blue_mask,
                                             cv2.RETR_TREE,
                                             cv2.CHAIN_APPROX_SIMPLE)
+        colored = False
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 300):
+                colored = True
+                self.Barea += area
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y),
                                         (x + w, y + h),
@@ -149,9 +180,35 @@ class VideoStreaming:
                 cv2.putText(img, "Blue Colour", (x, y),
                             cv2.FONT_HERSHEY_SIMPLEX,
                             1.0, (255, 0, 0))
+        
+        if not colored:
+            self.Barea = 0
+         # Creating contour to track yellow color
+        contours, hierarchy = cv2.findContours(yellow_mask,
+                                            cv2.RETR_TREE,
+                                            cv2.CHAIN_APPROX_SIMPLE)
+        colored = False
+        for pic, contour in enumerate(contours):
+            area = cv2.contourArea(contour)
+            if(area > 300):
+                colored = True
+                self.Yarea += area
+                x, y, w, h = cv2.boundingRect(contour)
+                img = cv2.rectangle(img, (x, y),
+                                        (x + w, y + h),
+                                        (255, 255, 0), 2)
+                
+                cv2.putText(img, "Yellow Colour", (x, y),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            1.0, (255, 255, 0))
+        if not colored:
+            self.Yarea = 0
+        
+
         cv2.imshow("red_mask", red_mask)
         cv2.imshow("green_mask", green_mask)
         cv2.imshow("blue_mask", blue_mask)
+        cv2.imshow("yellow_mask", yellow_mask)
         cv2.imshow("webcam", img)
         cv2.imwrite("video.jpg", img)
         cv2.waitKey(1)
@@ -162,19 +219,18 @@ class VideoStreaming:
             self.client_socket.connect((ip, 8000))
             self.connection = self.client_socket.makefile('rb')
         except:
-            #print "command port connect failed"
-            pass
+            print("command port connect failed")
         while True:
             try:
                 stream_bytes= self.connection.read(4) 
                 leng=struct.unpack('<L', stream_bytes[:4])
                 jpg=self.connection.read(leng[0])
                 if self.IsValidImage4Bytes(jpg):
-                            image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-                            if self.video_Flag:
-                                self.face_detect(image)
-                                self.color_detect(image)
-                                self.video_Flag=False
+                    image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                    if self.video_Flag:
+                        self.face_detect(image)
+                        self.color_detect(image)
+                        self.video_Flag=False
             except Exception as e:
                 print("stream")
                 print (e)

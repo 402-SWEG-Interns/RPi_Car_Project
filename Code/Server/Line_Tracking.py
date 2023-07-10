@@ -19,6 +19,8 @@ class Line_Tracking:
                 self.LMR=(self.LMR | 2)
             if GPIO.input(self.IR03)==True:
                 self.LMR=(self.LMR | 1)
+
+                
             if self.LMR==2:
                 PWM.setMotorModel(800,800,800,800)
             elif self.LMR==4:
