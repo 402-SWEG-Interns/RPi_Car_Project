@@ -18,56 +18,67 @@ def test_loop():
 def path_loop():
     
     forward()
-    time.sleep(2.1)
+    time.sleep(2.67)
+
+    stop()
     halfturn()
-    time.sleep(1.35)
-    """
-    #right()
-    time.sleep(1.35)
-    left()
 
-    time.sleep(1.25)
+    stop()
     forward()
-    time.sleep(.5)
-    left()
-    time.sleep(.5)
-    """
+    time.sleep(2)
+    
 
+    stop()
+    left()
+    time.sleep(.6985)
 
-    left()
-    time.sleep(.925)
+    stop()
     forward()
-    time.sleep(.5)
+    time.sleep(.575)
+
+    stop()
     left()
-    time.sleep(.3)
+    time.sleep(.5525)
+
+    stop()
     forward()
-    time.sleep(1.9)
+    time.sleep(2.17)
+
+    stop()
     left()
-    time.sleep(.3)
+    time.sleep(.225)
+
+    stop()
     forward()
-    time.sleep(1.5)
-    PWM.setMotorModel(0,0,0,0) 
+    time.sleep(3)
+    
+    stop()
 
 def halfturn():
     for i in range(5):
         right()
-        time.sleep(.25)
+        time.sleep(.32)
         forward()
-        time.sleep(.07)
+        time.sleep(.04)
   
     pass
 
 def forward():
-    PWM.setMotorModel(1500,1500,1250,1250)  #Forward
+    PWM.setMotorModel(900,900,850,850)  #Forward
 
 def right():
-     PWM.setMotorModel(2000,2000,-1500,-1500)
+     PWM.setMotorModel(2000,2000,-1000,-1000)
 
 def backwards():
-    PWM.setMotorModel(-2000,-2000,-950,-950)   #Back
+    PWM.setMotorModel(-900,-900,-850,-850)   #Back
 
 def left():
      PWM.setMotorModel(-1500,-1500, 2000, 2000)
+
+def stop():
+    PWM.setMotorModel(0,0,0,0) 
+    time.sleep(.25)
+
 
 
 
