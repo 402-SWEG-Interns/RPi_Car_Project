@@ -5,9 +5,11 @@ import socket
 import struct
 import time
 import picamera
+import numpy as np
 from threading import Condition
 import fcntl
 import  sys
+import cv2
 import threading
 from Motor import *
 from servo import *
@@ -21,11 +23,16 @@ from Line_Tracking import *
 from threading import Timer
 from threading import Thread
 from Command import COMMAND as cmd
+from linepath import * 
+from colorchange import *
+from search import *
+
 
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
         self.frame = None
         self.condition = Condition()
+        
 
     def write(self, buf):
         with self.condition:
@@ -42,12 +49,16 @@ class Server:
         self.adc=Adc()
         self.light=Light()
         self.infrared=Line_Tracking()
+        self.search = Search()
+        self.changecolor = colorchange()
         self.tcp_Flag = True
         self.sonic=False
         self.Light=False
         self.Mode = 'one'
         self.endChar='\n'
         self.intervalChar='#'
+        self.sequence = []
+
     def get_interface_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(s.fileno(),
@@ -132,10 +143,13 @@ class Server:
         except:
             pass            
         try:
-            stop_thread(self.ultrasonicRun)
+            stop_thread(self.search.Run)
             self.PWM.setMotorModel(0,0,0,0)
-            self.servo.setServoPwm('0',90)
-            self.servo.setServoPwm('1',90)
+            self.servo.setServoPwm('0',80)
+            self.servo.setServoPwm('1',100)
+            for i in range(self.led.strip.numPixels()):
+                self.led.strip.setPixelColor(i, Color(0, 0, 0))
+                self.led.strip.show()
         except:
             pass
         
@@ -174,15 +188,20 @@ class Server:
                     data=oneCmd.split("#")
                     if data==None:
                         continue
+                    elif cmd.CMD_SEQ in data:
+                        seq = data[1]
+                        self.sequence = seq.split(",")
                     elif cmd.CMD_MODE in data:
                         if data[1]=='one' or data[1]=="1":
                             self.stopMode()
                             self.Mode='one'
+                            
                         elif data[1]=='two' or data[1]=="3":
                             self.stopMode()
                             self.Mode='two'
-                            self.lightRun=Thread(target=self.light.run)
-                            self.lightRun.start()
+                            self.search = threading.Thread(target=self.search.run, args=self.sequence)
+                            self.search.start() 
+
                         elif data[1]=='three' or data[1]=="4":
                             self.stopMode()
                             self.Mode='three'
@@ -229,21 +248,38 @@ class Server:
                     elif cmd.CMD_LED_MOD in data:
                         self.LedMoD=data[1]
                         if self.LedMoD== '0':
-                            try:
-                                stop_thread(Led_Mode)
-                            except:
-                                pass
                             self.led.ledMode(self.LedMoD)
                             time.sleep(0.1)
                             self.led.ledMode(self.LedMoD)
                         else :
-                            try:
-                                stop_thread(Led_Mode)
-                            except:
-                                pass
                             time.sleep(0.1)
                             Led_Mode=Thread(target=self.led.ledMode,args=(data[1],))
                             Led_Mode.start()
+
+                    elif cmd.CMD_LED_PATH in data:
+                        self.LedPath = data[1]
+                        if self.LedPath == '0':
+                            for i in range(self.led.strip.numPixels()):
+                                self.led.strip.setPixelColor(i, Color(255, 0, 0))
+                                self.led.strip.show()
+        
+                        elif self.LedPath == '1':
+                            for i in range(self.led.strip.numPixels()):
+                                self.led.strip.setPixelColor(i, Color(0, 0, 255))
+                                self.led.strip.show()
+                        elif self.LedPath == '2':
+                            for i in range(self.led.strip.numPixels()):
+                                self.led.strip.setPixelColor(i, Color(255, 255, 0))
+                                self.led.strip.show()
+                        elif self.LedPath == '3':
+                            for i in range(self.led.strip.numPixels()):
+                                self.led.strip.setPixelColor(i, Color(0, 255, 0))
+                                self.led.strip.show()
+                        else:
+                            for i in range(self.led.strip.numPixels()):
+                                self.led.strip.setPixelColor(i, Color(0, 0, 0))
+                                self.led.strip.show()
+
                     elif cmd.CMD_SONIC in data:
                         if data[1]=='1':
                             self.sonic=True
@@ -292,6 +328,15 @@ class Server:
                 self.Light=False
             self.lightTimer = threading.Timer(0.17,self.sendLight)
             self.lightTimer.start()
+    def stopLED(self):
+        try:
+            stop_thread(self.Color_Change)
+            for i in range(self.led.strip.numPixels()):
+                    self.led.strip.setPixelColor(i, Color(0, 0, 0))
+                    self.led.strip.show()
+        except:
+            pass
+
     def Power(self):
         while True:
             ADC_Power=self.adc.recvADC(2)*3
