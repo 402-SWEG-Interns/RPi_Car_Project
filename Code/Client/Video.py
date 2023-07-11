@@ -55,7 +55,7 @@ class VideoStreaming:
             MODEL_NAME = 'Sample_TFLite_model'
             GRAPH_NAME = 'detect.tflite'
             LABELMAP_NAME = 'labelmap.txt'
-            min_conf_threshold = 0.3
+            min_conf_threshold = 0.8
             
             imW, imH = int(400), int(300)
 
@@ -127,7 +127,7 @@ class VideoStreaming:
             # Loop over all detections and draw detection box if confidence is above minimum threshold
             for i in range(len(scores)):
                 # Found desired object with decent confidence
-                if ( (scores[i] > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
+                if (((labels[int(classes[i])] == "vase") or (labels[int(classes[i])] == "apple") or (labels[int(classes[i])] == "sports ball") or (labels[int(classes[i])] == "toilet") or (labels[int(classes[i])] == "frisbee") or (labels[int(classes[i])] == "cup") or (labels[int(classes[i])] == "orange"))):
                     # Get bounding box coordinates and draw box
                     # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
                     ymin = int(max(1,(boxes[i][0] * imH)))
@@ -137,7 +137,7 @@ class VideoStreaming:
                     
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-                    label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
+                    label = '%s: %d%%' % ("Ball", int(scores[i]*100)) # Example: 'person: 72%'
                     labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
                     label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
                     cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
@@ -163,7 +163,7 @@ class VideoStreaming:
 
             # Draw framerate in corner of frame
             cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-        
+            self.color_detect(img)            
         cv2.imwrite('video.jpg', frame)
             
             
