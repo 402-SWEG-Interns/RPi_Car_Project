@@ -254,6 +254,7 @@ class Ui_Client(object):
         font.setFamily("Malgun Gothic")
         self.Window_Close.setFont(font)
         self.Window_Close.setObjectName("Window_Close")
+
         self.IP = QtWidgets.QLineEdit(Client)
         self.IP.setGeometry(QtCore.QRect(10, 380, 101, 30))
         font = QtGui.QFont()
@@ -262,6 +263,16 @@ class Ui_Client(object):
         self.IP.setFont(font)
         self.IP.setStyleSheet("")
         self.IP.setObjectName("IP")
+
+        self.Sequence = QtWidgets.QLineEdit(Client)
+        self.Sequence.setGeometry(QtCore.QRect(10, 425, 101, 30))
+        font = QtGui.QFont()
+        font.setFamily("Malgun Gothic")
+        font.setPointSize(10)
+        self.Sequence.setFont(font)
+        self.Sequence.setStyleSheet("")
+        self.Sequence.setObjectName("Sequence")
+
         self.Btn_Connect = QtWidgets.QPushButton(Client)
         self.Btn_Connect.setGeometry(QtCore.QRect(120, 380, 90, 30))
         font = QtGui.QFont()
@@ -580,7 +591,10 @@ class Ui_Client(object):
         self.Btn_Up.setText(_translate("Client", "Up"))
         self.Btn_Right.setText(_translate("Client", "Right"))
         self.Window_Close.setText(_translate("Client", "×"))
+
         self.IP.setText(_translate("Client", "IP Address"))
+        self.Sequence.setText(_translate("Client", "Color Sequence"))
+
         self.Btn_Connect.setText(_translate("Client", "Connect"))
         self.checkBox_Led1.setText(_translate("Client", "Led1"))
         self.label_Servo2.setText(_translate("Client", "0"))
@@ -610,7 +624,7 @@ class Ui_Client(object):
         self.Servo2.setText(_translate("Client", "Servo 2"))
         self.Btn_Buzzer.setText(_translate("Client", "Buzzer"))
         self.Btn_Mode1.setText(_translate("Client", "M-Free"))
-        self.Btn_Mode2.setText(_translate("Client", "M-Light"))
+        self.Btn_Mode2.setText(_translate("Client", "M-Search"))
         self.Btn_Mode3.setText(_translate("Client", "M-Sonic"))
         self.Btn_Mode4.setText(_translate("Client", "M-Line"))
         self.Btn_Tracking_Faces.setText(_translate("Client", "Tracing-On"))
