@@ -354,6 +354,13 @@ class mywindow(QMainWindow,Ui_Client):
         if self.servo1<=0:
             self.servo1=0
         self.HSlider_Servo1.setValue(self.servo1)
+
+    def look_left(self):
+        self.on_btn_Light
+
+    def look_right(self):
+        self.on_btn_Right
+
     def on_btn_Down(self):
         self.servo2=self.servo2-10
         if self.servo2<=80:
@@ -501,6 +508,42 @@ class mywindow(QMainWindow,Ui_Client):
            else:
                self.TCP.sendData(cmd.CMD_LED_MOD+self.intervalChar+'0'+self.endChar)
 
+    def search_destroy(self):
+        color_order = self.s.split(",")
+        for i in color_order:
+            self.TCP.current_color = i
+            destroyed = False
+            while not destroyed:
+                if not self.TCP.found_ball:
+                    self.search
+
+                if self.TCP.found_ball:
+                    
+                    # Orientates car so that ball is directly in front 
+                    # Moves forward until reached edge
+                    if self.edge:
+                        destroyed = True
+
+
+
+    def search(self):
+
+        pass
+
+            
+
+
+    def time(self):
+        self.TCP.video_Flag=False
+        try:
+            if  self.is_valid_jpg('video.jpg'):
+                self.label_Video.setPixmap(QPixmap('video.jpg'))
+                if self.Btn_Tracking_Faces.text()=="Tracing-Off":
+                    self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                    #self.search_destroy
+        except Exception as e:
+            print(e)
+        self.TCP.video_Flag=True
  
     def on_btn_Mode(self,Mode):
         if Mode.text() == "M-Free":
@@ -509,11 +552,8 @@ class mywindow(QMainWindow,Ui_Client):
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Search":
             if Mode.isChecked() == True:
-                #self.timer.stop()
-                self.s = self.Sequence.text().split(",")
-                print(self.s)
-                self.TCP.sendData(cmd.CMD_SEQ+self.intervalChar+self.s+self.endChar)
-                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
+                self.s = self.Sequence.text()
+                self.attack = Thread(target=self.search_destroy)
         if Mode.text() == "M-Sonic":
             if Mode.isChecked() == True:
                 #self.timer.stop()
@@ -640,22 +680,6 @@ class mywindow(QMainWindow,Ui_Client):
                 self.HSlider_Servo1.setValue(self.servo1)
                 self.VSlider_Servo2.setValue(self.servo2)
                 
-    def search_destroy(self):
-        self.s = self.Sequence.text().split(",")
-        for i in self.s:
-            self.TCP.current_color = i
-        pass
-
-    def time(self):
-        self.TCP.video_Flag=False
-        try:
-            if  self.is_valid_jpg('video.jpg'):
-                self.label_Video.setPixmap(QPixmap('video.jpg'))
-                if self.Btn_Tracking_Faces.text()=="Tracing-Off":
-                        self.find_Face(self.TCP.face_x,self.TCP.face_y)
-        except Exception as e:
-            print(e)
-        self.TCP.video_Flag=True
         
             
 if __name__ == '__main__':

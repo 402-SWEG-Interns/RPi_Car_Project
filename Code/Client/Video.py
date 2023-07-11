@@ -171,23 +171,76 @@ class VideoStreaming:
 
     
     def color_detect(self, imageFrame, color):
-        hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
+        try:
+            hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
 
-        hsv_dict= {"red": (np.array([160, 87, 111], np.uint8), np.array([180, 255, 255], np.uint8)),
-                    "blue":(np.array([87, 130, 125], np.uint8),np.array([110, 255, 255], np.uint8)),
-                    "green": (np.array([40, 190, 75], np.uint8), np.array([86, 255, 255], np.uint8)), 
-                    "yellow" :(np.array([24, 190, 111], np.uint8), np.array([30, 255, 255], np.uint8))}
-        
-        limits = hsv_dict[color.lower()]
-        mask = cv2.inRange(hsvFrame, limits[0], limits[1])
+            hsv_dict= {"red": (np.array([160, 87, 111], np.uint8), np.array([180, 255, 255], np.uint8)),
+                        "blue":(np.array([87, 130, 125], np.uint8),np.array([110, 255, 255], np.uint8)),
+                        "green": (np.array([40, 190, 75], np.uint8), np.array([86, 255, 255], np.uint8)), 
+                        "yellow" :(np.array([24, 190, 111], np.uint8), np.array([30, 255, 255], np.uint8))}
+            
+            limits = hsv_dict[color.lower()]
+            mask = cv2.inRange(hsvFrame, limits[0], limits[1])
 
-        res = cv2.bitwise_and(imageFrame, imageFrame, mask = mask)
+            res = cv2.bitwise_and(imageFrame, imageFrame, mask = mask)
 
-        self.face_detect(imageFrame, res)
+            self.face_detect(imageFrame, res)
+        except:
+            pass
 
 
 
         pass
+
+            
+
+    def streaming(self,ip):
+        stream_bytes = b' '
+        try:
+            self.client_socket.connect((ip, 8000))
+            self.connection = self.client_socket.makefile('rb')
+        except:
+            #print "command port connect failed"
+            pass
+        while True:
+            try:
+                stream_bytes= self.connection.read(4) 
+                leng=struct.unpack('<L', stream_bytes[:4])
+                jpg=self.connection.read(leng[0])
+                if self.IsValidImage4Bytes(jpg):
+                            image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                            if self.video_Flag:
+                                #self.face_detect(image)
+                                self.color_detect(image, self.current_color)
+                                self.video_Flag=False
+            except Exception as e:
+                print (e)
+                break
+                  
+    def sendData(self,s):
+        if self.connect_Flag:
+            self.client_socket1.send(s.encode('utf-8'))
+
+    def recvData(self):
+        data=""
+        try:
+            data=self.client_socket1.recv(1024).decode('utf-8')
+        except:
+            pass
+        return data
+
+    def socket1_connect(self,ip):
+        try:
+            self.client_socket1.connect((ip, 5000))
+            self.connect_Flag=True
+            print ("Connection Successful !")
+        except Exception as e:
+            print ("Connect to server Failed!: Server IP is right? Server is opened?")
+            self.connect_Flag=False
+
+if __name__ == '__main__':
+    pass
+
 
     """
     def color_detect(self, imageFrame):
@@ -374,52 +427,3 @@ class VideoStreaming:
             #print(self.colors_detected)
             #cv2.imwrite('video.jpg',imageFrame)
             #cv2.waitKey(1) """
-            
-
-    def streaming(self,ip):
-        stream_bytes = b' '
-        try:
-            self.client_socket.connect((ip, 8000))
-            self.connection = self.client_socket.makefile('rb')
-        except:
-            #print "command port connect failed"
-            pass
-        while True:
-            try:
-                stream_bytes= self.connection.read(4) 
-                leng=struct.unpack('<L', stream_bytes[:4])
-                jpg=self.connection.read(leng[0])
-                if self.IsValidImage4Bytes(jpg):
-                            image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-                            if self.video_Flag:
-                                #self.face_detect(image)
-                                self.color_detect(image)
-                                self.video_Flag=False
-            except Exception as e:
-                print (e)
-                break
-                  
-    def sendData(self,s):
-        if self.connect_Flag:
-            self.client_socket1.send(s.encode('utf-8'))
-
-    def recvData(self):
-        data=""
-        try:
-            data=self.client_socket1.recv(1024).decode('utf-8')
-        except:
-            pass
-        return data
-
-    def socket1_connect(self,ip):
-        try:
-            self.client_socket1.connect((ip, 5000))
-            self.connect_Flag=True
-            print ("Connection Successful !")
-        except Exception as e:
-            print ("Connect to server Failed!: Server IP is right? Server is opened?")
-            self.connect_Flag=False
-
-if __name__ == '__main__':
-    pass
-
