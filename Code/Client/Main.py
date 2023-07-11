@@ -27,6 +27,7 @@ class mywindow(QMainWindow,Ui_Client):
         self.endChar='\n'
         self.intervalChar='#'
         self.h=self.IP.text()
+        self.s = self.Sequence.text()
         self.TCP=VideoStreaming()
         self.servo1=90
         self.servo2=90
@@ -490,9 +491,12 @@ class mywindow(QMainWindow,Ui_Client):
             if Mode.isChecked() == True:
                 #self.timer.start(34)
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
-        if Mode.text() == "M-Light":
+        if Mode.text() == "M-Search":
             if Mode.isChecked() == True:
                 #self.timer.stop()
+                self.s = self.Sequence.text().split(",")
+                print(self.s)
+                self.TCP.sendData(cmd.CMD_SEQ+self.intervalChar+self.s+self.endChar)
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
         if Mode.text() == "M-Sonic":
             if Mode.isChecked() == True:
@@ -605,6 +609,7 @@ class mywindow(QMainWindow,Ui_Client):
             self.Btn_Tracking_Faces.setText("Tracing-Off")
         else:
             self.Btn_Tracking_Faces.setText("Tracing-On")
+            
     def find_Face(self,face_x,face_y):
         if face_x!=0 and face_y!=0:
             offset_x=float(face_x/400-0.5)*2
@@ -618,6 +623,13 @@ class mywindow(QMainWindow,Ui_Client):
             else:
                 self.HSlider_Servo1.setValue(self.servo1)
                 self.VSlider_Servo2.setValue(self.servo2)
+                
+    def search_destroy(self):
+        self.s = self.Sequence.text().split(",")
+        for i in self.s:
+            pass
+        pass
+
     def time(self):
         self.TCP.video_Flag=False
         try:
