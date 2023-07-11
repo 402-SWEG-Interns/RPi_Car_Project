@@ -31,6 +31,7 @@ class mywindow(QMainWindow,Ui_Client):
         self.TCP=VideoStreaming()
         self.servo1=90
         self.servo2=90
+        
         self.label_FineServo2.setText("0")
         self.label_FineServo1.setText("0")
         self.m_DragPosition=self.pos()
@@ -298,11 +299,26 @@ class mywindow(QMainWindow,Ui_Client):
                 self.on_btn_Buzzer()
                 self.Key_Space=False
         
+    def forward(self):
+        self.on_btn_ForWard
+    
+    def left(self):
+        self.on_btn_Turn_Left
+
+    def backwards(self):
+        self.on_btn_BackWard
+
+    def right(self):
+        self.on_btn_Turn_Right
+
+    def stop(self):
+        self.on_btn_Stop
 
         
     def on_btn_ForWard(self):
         ForWard=self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.endChar
         self.TCP.sendData(cmd.CMD_MOTOR+ForWard)
+
 
     def on_btn_Turn_Left(self):
         Turn_Left=self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.endChar
@@ -609,7 +625,7 @@ class mywindow(QMainWindow,Ui_Client):
             self.Btn_Tracking_Faces.setText("Tracing-Off")
         else:
             self.Btn_Tracking_Faces.setText("Tracing-On")
-            
+
     def find_Face(self,face_x,face_y):
         if face_x!=0 and face_y!=0:
             offset_x=float(face_x/400-0.5)*2
@@ -627,7 +643,7 @@ class mywindow(QMainWindow,Ui_Client):
     def search_destroy(self):
         self.s = self.Sequence.text().split(",")
         for i in self.s:
-            pass
+            self.TCP.current_color = i
         pass
 
     def time(self):

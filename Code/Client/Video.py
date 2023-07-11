@@ -19,6 +19,10 @@ class VideoStreaming:
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
+        self.ball_x=0
+        self.ball_y=0
+        self.current_color = ""
+        self.found_ball=False
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -117,6 +121,11 @@ class VideoStreaming:
             max_score = 0
             max_index = 0
 
+            if len(scores) > 0:
+                self.found_ball = True
+            else:
+                self.found_ball = False
+
             # Loop over all detections and draw detection box if confidence is above minimum threshold
             for i in range(len(scores)):
                 # Found desired object with decent confidence
@@ -136,6 +145,7 @@ class VideoStreaming:
                     cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
                     cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
                     cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
+                    
 
                     # Record current max
                     max_score = scores[i]
@@ -158,7 +168,28 @@ class VideoStreaming:
             cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         
         cv2.imwrite('video.jpg', frame)
+
     
+    def color_detect(self, imageFrame, color):
+        hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
+
+        hsv_dict= {"red": (np.array([160, 87, 111], np.uint8), np.array([180, 255, 255], np.uint8)),
+                    "blue":(np.array([87, 130, 125], np.uint8),np.array([110, 255, 255], np.uint8)),
+                    "green": (np.array([40, 190, 75], np.uint8), np.array([86, 255, 255], np.uint8)), 
+                    "yellow" :(np.array([24, 190, 111], np.uint8), np.array([30, 255, 255], np.uint8))}
+        
+        limits = hsv_dict[color.lower()]
+        mask = cv2.inRange(hsvFrame, limits[0], limits[1])
+
+        res = cv2.bitwise_and(imageFrame, imageFrame, mask = mask)
+
+        self.face_detect(imageFrame, res)
+
+
+
+        pass
+
+    """
     def color_detect(self, imageFrame):
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
             # Reading the video from the
@@ -219,14 +250,14 @@ class VideoStreaming:
             res_yellow = cv2.bitwise_and(imageFrame, imageFrame,
                                     mask = yellow_mask)
 
-           # self.face_detect(imageFrame,res_red)
-            #self.face_detect(imageFrame,res_blue)
+            self.face_detect(imageFrame,res_red)
+            self.face_detect(imageFrame,res_blue)
             self.face_detect(imageFrame,res_green)
            # self.face_detect(imageFrame,res_yellow)
             
-           # previous_colors = self.colors_detected
+            #previous_colors = self.colors_detected
             #found_color = []
-            """
+            
     
             # Creating contour to track red color
             contours, hierarchy = cv2.findContours(red_mask,
@@ -338,11 +369,11 @@ class VideoStreaming:
             cv2.imshow("greem_mask", green_mask)
             cv2.imshow("blue_mask", blue_mask)
             cv2.imshow("yellow_mask", yellow_mask)
-            cv2.imshow("webcam", imageFrame)"""
+            cv2.imshow("webcam", imageFrame)
             #self.colors_detected
             #print(self.colors_detected)
             #cv2.imwrite('video.jpg',imageFrame)
-            #cv2.waitKey(1) 
+            #cv2.waitKey(1) """
             
 
     def streaming(self,ip):
