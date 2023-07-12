@@ -622,7 +622,7 @@ class mywindow(QMainWindow,Ui_Client):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-Off":
                     self.find_Face(self.TCP.face_x,self.TCP.face_y)
-                    self.colorDetect()
+                    # self.colorDetect()
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
