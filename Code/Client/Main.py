@@ -134,7 +134,7 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Down.clicked.connect(self.on_btn_Down)
         self.Btn_Home.clicked.connect(self.on_btn_Home)
         self.Btn_Right.clicked.connect(self.on_btn_Right)
-        self.Btn_Tracking_Faces.clicked.connect(self.Tracking_Face)
+        self.Btn_Tracking_Balls.clicked.connect(self.Tracking_Ball)
         
 
         self.Btn_Buzzer.pressed.connect(self.on_btn_Buzzer)
@@ -600,15 +600,15 @@ class mywindow(QMainWindow,Ui_Client):
             pass
         return bValid
 
-    def Tracking_Face(self):
-        if self.Btn_Tracking_Faces.text()=="Tracing-On":
-            self.Btn_Tracking_Faces.setText("Tracing-Off")
+    def Tracking_Ball(self):
+        if self.Btn_Tracking_Balls.text()=="Tracing-On":
+            self.Btn_Tracking_Balls.setText("Tracing-Off")
         else:
-            self.Btn_Tracking_Faces.setText("Tracing-On")
-    def find_Face(self,face_x,face_y):
-        if face_x!=0 and face_y!=0:
-            offset_x=float(face_x/400-0.5)*2
-            offset_y=float(face_y/300-0.5)*2
+            self.Btn_Tracking_Balls.setText("Tracing-On")
+    def find_Ball(self,ball_x,ball_y):
+        if ball_x!=0 and ball_y!=0:
+            offset_x=float(ball_x/400-0.5)*2
+            offset_y=float(ball_y/300-0.5)*2
             delta_degree_x = 4* offset_x
             delta_degree_y = -4 * offset_y
             self.servo1=self.servo1+delta_degree_x
@@ -623,8 +623,8 @@ class mywindow(QMainWindow,Ui_Client):
         try:
             if  self.is_valid_jpg('video.jpg'):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
-                if self.Btn_Tracking_Faces.text()=="Tracing-Off":
-                        self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                if self.Btn_Tracking_Balls.text()=="Tracing-Off":
+                        self.find_Ball(self.TCP.ball_x,self.TCP.ball_y)
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
