@@ -673,7 +673,7 @@ class mywindow(QMainWindow,Ui_Client):
             if  self.is_valid_jpg('video.jpg'):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="He off":
-                        #self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                    #self.find_Face(self.TCP.face_x,self.TCP.face_y)
                     self.colorDetect()
         except Exception as e:
             print(e)
