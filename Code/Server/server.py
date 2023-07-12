@@ -271,7 +271,7 @@ class Server:
                             self.send(cmd.CMD_POWER+'#'+str(ADC_Power)+'\n')
                         except:
                             pass
-                    elif cmd.CMD_BALL in data[0]:
+                    elif cmd.CMD_BALL in data:
                         detect_object=data[1]
                         self.scan.detect_object(bool(data))
                         
