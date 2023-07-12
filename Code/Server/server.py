@@ -9,7 +9,6 @@ import numpy as np
 from threading import Condition
 import fcntl
 import  sys
-import cv2
 import threading
 from Motor import *
 from servo import *
