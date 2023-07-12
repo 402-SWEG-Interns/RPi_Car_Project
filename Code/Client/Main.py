@@ -505,6 +505,10 @@ class mywindow(QMainWindow,Ui_Client):
             except:
                 pass
             self.TCP.StopTcpcClient()
+    
+    #Insert confirm function here?
+    
+    
 
 
     def Power(self):

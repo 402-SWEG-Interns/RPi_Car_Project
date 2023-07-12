@@ -323,7 +323,7 @@ class VideoStreaming:
             MODEL_NAME = 'Sample_TFLite_model'
             GRAPH_NAME = 'detect.tflite'
             LABELMAP_NAME = 'labelmap.txt'
-            min_conf_threshold = .4
+            min_conf_threshold = .3
             
             imW, imH = int(400), int(300)
 

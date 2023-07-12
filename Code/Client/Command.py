@@ -12,6 +12,7 @@ class COMMAND:
     CMD_START = "Start"
     CMD_STOP = "Stop"
     CMD_MODE ="CMD_MODE"
+    
     def __init__(self):
         pass
         #self.intervalChar
