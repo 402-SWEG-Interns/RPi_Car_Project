@@ -515,7 +515,7 @@ class mywindow(QMainWindow,Ui_Client):
             destroyed = False
             while not destroyed:
                 if not self.TCP.found_ball:
-                    self.search
+                    self.search()
 
                 if self.TCP.found_ball:
                     self.center(self.TCP.ball_x, self.servo1)
@@ -528,7 +528,33 @@ class mywindow(QMainWindow,Ui_Client):
 
     def search(self):
 
-        pass
+        # look right
+        for i in range(10):
+            self.look_right()
+            time.sleep(0.3)
+
+            if self.TCP.found_ball:
+                return
+
+        # return to left
+        for i in range(17):
+            self.look_left()
+            time.sleep(0.3)
+
+            if self.TCP.found_ball:
+                return
+
+        # return to middle
+        for i in range(10):
+            self.look_right()
+            time.sleep(0.3)
+
+            if self.TCP.found_ball:
+                return
+
+        self.forward()
+        time.sleep(2)
+        
 
     def center(self, x_coord, servo):
         if x_coord > 180 and x_coord < 220:
@@ -548,7 +574,6 @@ class mywindow(QMainWindow,Ui_Client):
             pass
         elif x_coord > 220 and servo < 70: #On right, looking left
             pass
-
             
 
 
