@@ -48,6 +48,8 @@ class Server:
         self.Mode = 'one'
         self.endChar='\n'
         self.intervalChar='#'
+
+        self.scan = Light()
     def get_interface_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(s.fileno(),
@@ -269,6 +271,11 @@ class Server:
                             self.send(cmd.CMD_POWER+'#'+str(ADC_Power)+'\n')
                         except:
                             pass
+                    elif cmd.CMD_BALL in data[0]:
+                        detect_object=data[1]
+                        self.scan.detect_object(bool(data))
+                        
+
         except Exception as e: 
             print(e)
         self.StopTcpServer()    

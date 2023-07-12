@@ -20,6 +20,7 @@ class VideoStreaming:
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
+        self.red_detect=False
         self.color='empty'
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -491,6 +492,9 @@ class VideoStreaming:
                     cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
                     cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
 
+                    #
+                    self.red_detect=True
+
                     # Record current max
                     max_score = scores[i]
                     max_index = i
@@ -754,11 +758,6 @@ class VideoStreaming:
         cv2.imwrite('video.jpg', frame)
 
 
-
-
-
-
-
     def streaming(self,ip):
         stream_bytes = b' '
         try:
@@ -768,8 +767,6 @@ class VideoStreaming:
             #print "command port connect failed"
             pass
         while True:
-            count = -1
-            count += 1
             try:
                 stream_bytes= self.connection.read(4) 
                 leng=struct.unpack('<L', stream_bytes[:4])
@@ -778,14 +775,7 @@ class VideoStreaming:
                             image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                             if self.video_Flag:
                                 # self.ball_detect(image)
-                                if count== 0:
-                                  self.red_detect(image)
-                                if count == 1:
-                                    self.blue_detect(image)
-                                if count == 2:
-                                    self.green_detect(image)
-                                if count == 3:
-                                    self.face_detect(image)
+                                self.red_detect(image)
                                 self.video_Flag=False
             except Exception as e:
                 print (e)
