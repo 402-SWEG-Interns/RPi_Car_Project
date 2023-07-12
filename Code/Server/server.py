@@ -273,7 +273,7 @@ class Server:
                             pass
                     elif cmd.CMD_BALL in data:
                         detect_object=data[1]
-                        self.scan.detect_object(bool(data))
+                        self.scan.detect_object(eval(data))
                         
 
         except Exception as e: 

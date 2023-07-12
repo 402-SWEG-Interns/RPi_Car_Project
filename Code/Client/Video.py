@@ -20,7 +20,7 @@ class VideoStreaming:
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
-        self.red_detect=False
+        self.red_detect='False'
         self.color='empty'
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -493,7 +493,7 @@ class VideoStreaming:
                     cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
 
                     #
-                    self.red_detect=True
+                    self.red_detect='True'
 
                     # Record current max
                     max_score = scores[i]
