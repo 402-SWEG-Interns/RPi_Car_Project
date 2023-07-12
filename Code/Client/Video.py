@@ -11,6 +11,7 @@ import os
 from PIL import Image
 from multiprocessing import Process
 from Command import COMMAND as cmd
+import time
 
 
 class VideoStreaming:
@@ -369,7 +370,7 @@ class VideoStreaming:
                             if self.video_Flag:
                                 # self.ColorDetect(image) ##9483273984329849238379
                                 # self.face_detect(image)
-                                self.color_ball_detect(image,'yellow')
+                                self.color_ball_detect(image,'red')
                                 self.video_Flag=False
             except Exception as e:
                 print (e)
@@ -593,18 +594,22 @@ class VideoStreaming:
                 l = [136,87,111]
                 u = [180,255,255]
                 _label = 'red ballz'
+                self.lastSeen = 0
             elif self.color == 'green':
                 l = [45,100,72]
                 u = [90,255,255]
                 _label = 'green ballz'
+                self.lastSeen = 1
             elif self.color == 'blue':
                 l = [90,150,150]
                 u = [110,255,255]
                 _label = 'blue ballz'
+                self.lastSeen = 2
             elif self.color == 'yellow':
                 l = [21,100,100]
                 u = [30,255,255]
                 _label = 'yellow ballz'
+                self.lastSeen = 3
             else:
                 print("You misspelled a color dummy, reload and try again")
                 exit
@@ -731,7 +736,7 @@ class VideoStreaming:
                 self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
 
             # Draw framerate in corner of frame
-            cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+            cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2,cv2.LINE_AA)
         
         cv2.imwrite('video.jpg', frame)
         

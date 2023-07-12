@@ -300,19 +300,19 @@ class mywindow(QMainWindow,Ui_Client):
 
         
     def on_btn_ForWard(self):
-        ForWard=self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.endChar
+        ForWard=self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.endChar
         self.TCP.sendData(cmd.CMD_MOTOR+ForWard)
 
     def on_btn_Turn_Left(self):
-        Turn_Left=self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.endChar
+        Turn_Left=self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.endChar
         self.TCP.sendData(cmd.CMD_MOTOR+ Turn_Left)
 
     def on_btn_BackWard(self):
-        BackWard=self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.endChar
+        BackWard=self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.endChar
         self.TCP.sendData(cmd.CMD_MOTOR+BackWard)
 
     def on_btn_Turn_Right(self):
-        Turn_Right=self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.endChar
+        Turn_Right=self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.endChar
         self.TCP.sendData(cmd.CMD_MOTOR+Turn_Right)
 
     def on_btn_Stop(self):
@@ -678,6 +678,9 @@ class mywindow(QMainWindow,Ui_Client):
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
+
+    def line_setup(self):
+        exit
         
             
 if __name__ == '__main__':
