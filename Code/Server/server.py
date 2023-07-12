@@ -175,7 +175,7 @@ class Server:
                     if data==None:
                         continue
                     elif cmd.CMD_MODE in data:
-                        if data[1]=='one' or data[1]=="1":
+                        if data[1]=='one' or data[1]=="1": # This comes from ../Client/Main.py ; Make this do the color-chase task
                             self.stopMode()
                             self.Mode='one'
                         elif data[1]=='two' or data[1]=="3":
