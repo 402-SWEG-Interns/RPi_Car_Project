@@ -254,6 +254,7 @@ class Ui_Client(object):
         font.setFamily("Malgun Gothic")
         self.Window_Close.setFont(font)
         self.Window_Close.setObjectName("Window_Close")
+
         self.IP = QtWidgets.QLineEdit(Client)
         self.IP.setGeometry(QtCore.QRect(10, 380, 101, 30))
         font = QtGui.QFont()
@@ -262,6 +263,16 @@ class Ui_Client(object):
         self.IP.setFont(font)
         self.IP.setStyleSheet("")
         self.IP.setObjectName("IP")
+#---------------------------------------------------------
+        self.COLOR = QtWidgets.QLineEdit(Client)
+        self.COLOR.setGeometry(QtCore.QRect(10, 420, 101, 30))
+        font = QtGui.QFont()
+        font.setFamily("Malgun Gothic")
+        font.setPointSize(10)
+        self.COLOR.setFont(font)
+        self.COLOR.setStyleSheet("")
+        self.COLOR.setObjectName("COLOR")
+
         self.Btn_Connect = QtWidgets.QPushButton(Client)
         self.Btn_Connect.setGeometry(QtCore.QRect(120, 380, 90, 30))
         font = QtGui.QFont()
@@ -580,7 +591,10 @@ class Ui_Client(object):
         self.Btn_Up.setText(_translate("Client", "Up"))
         self.Btn_Right.setText(_translate("Client", "Right"))
         self.Window_Close.setText(_translate("Client", "×"))
-        self.IP.setText(_translate("Client", "IP Address"))
+        self.IP.setText(_translate("Client", "172.20.0.246"))
+
+        self.COLOR.setText(_translate("Client", "input color order"))
+
         self.Btn_Connect.setText(_translate("Client", "Connect"))
         self.checkBox_Led1.setText(_translate("Client", "Led1"))
         self.label_Servo2.setText(_translate("Client", "0"))

@@ -27,6 +27,8 @@ class mywindow(QMainWindow,Ui_Client):
         self.endChar='\n'
         self.intervalChar='#'
         self.h=self.IP.text()
+        self.c = self.COLOR.text()
+
         self.TCP=VideoStreaming()
         self.servo1=90
         self.servo2=90
@@ -489,12 +491,18 @@ class mywindow(QMainWindow,Ui_Client):
     def on_btn_Mode(self,Mode):
         if Mode.text() == "M-Free":
             if Mode.isChecked() == True:
+                try:
+                    stop_thread(self.search)
+                except:
+                    pass
                 #self.timer.start(34)
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Light":
             if Mode.isChecked() == True:
                 #self.timer.stop()
-                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
+                #self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
+                self.search = Thread(target=self.search)
+                self.search.start()
         if Mode.text() == "M-Sonic":
             if Mode.isChecked() == True:
                 #self.timer.stop()
@@ -508,6 +516,7 @@ class mywindow(QMainWindow,Ui_Client):
     def on_btn_Connect(self):
         if self.Btn_Connect.text() == "Connect":
             self.h=self.IP.text()
+            self.c=self.COLOR.text() #sets self.c = to whatever was in the text box
             self.TCP.StartTcpClient(self.h,)
             try:
                 self.streaming=Thread(target=self.TCP.streaming,args=(self.h,))
@@ -666,7 +675,28 @@ class mywindow(QMainWindow,Ui_Client):
             for x in leds: 
                 self.led_Index = x 
                 self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color)
+    def scan(self):
+        for i in range(7):
+            self.on_btn_Left()
+            time.sleep(0.45)
+        for i in range(15):
+            self.on_btn_Right()
+            time.sleep(0.45)
+        for i in range(8):
+            self.on_btn_Left()
+            time.sleep(0.45)
+        
 
+    def search(self):
+        order = self.c.split(',')
+        print(order)
+
+        for i in order:
+            self.TCP.current_color = i
+            print(i)
+            self.scan()
+            time.sleep(1.5)
+    
     def time(self):
         self.TCP.video_Flag=False
         try:
@@ -674,13 +704,14 @@ class mywindow(QMainWindow,Ui_Client):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="He off":
                     #self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                    
                     self.colorDetect()
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
 
-    def line_setup(self):
-        exit
+    
+
         
             
 if __name__ == '__main__':
