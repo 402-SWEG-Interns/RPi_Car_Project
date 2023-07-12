@@ -152,13 +152,9 @@ def main():
                         PWM.setMotorModel(0,0,0,0)
                         time.sleep(1)
 
-                        if tick == 3:
-                           tick = 0
-                    
-                    else: # Idk, break program for now
-                        PWM.setMotorModel(0,0,0,0)
-                        print('An unexpected error occurred')
-                        KeyboardInterrupt
+                    else: # Resets turning left and right
+                        tick = 0
+
             elif LMR==2: # Middle Sensor
                 if Ms == False:
                     print('\nMiddle Sensor Detected\nStopping Car')
@@ -200,13 +196,9 @@ def main():
                         PWM.setMotorModel(0,0,0,0)
                         time.sleep(1)
 
-                        if tick == 3:
-                           tick = 0
 
-                    else: # Idk, break program for now
-                        PWM.setMotorModel(0,0,0,0)
-                        print('An unexpected error occurred')
-                        KeyboardInterrupt
+                    else: # Resets turning left and right
+                        tick = 0
 
             # Turn Left
             elif LMR==3: # Middle + Right Sensors
