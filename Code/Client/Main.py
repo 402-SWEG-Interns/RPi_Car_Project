@@ -625,10 +625,12 @@ class mywindow(QMainWindow,Ui_Client):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-Off":
                         self.find_Face(self.TCP.face_x,self.TCP.face_y)
-                        self.color_Area()
+                        self.TCP.sendData(cmd.CMD_BALL+str(self.TCP.red_detect)+self.endChar)
+                        # self.color_Area()
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
+
     def color_Area(self):
         leds = [str(0x01),str(0x02),str(0x08),str(0x04),str(0x10),str(0x20),str(0x40),str(0x80)]
         self.led_Index=str(0x01)
@@ -663,7 +665,7 @@ class mywindow(QMainWindow,Ui_Client):
                 self.led_Index=led
                 color=self.intervalChar+str(255)+self.intervalChar+str(200)+self.intervalChar+str(0)+self.endChar
                 self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
-           
+       
         
             
 if __name__ == '__main__':
