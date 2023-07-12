@@ -21,7 +21,7 @@ class VideoStreaming:
         self.face_y=0
         self.ball_x=0
         self.ball_y=0
-        self.current_color = ""
+        self.current_color = "red"
         self.found_ball=False
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -145,7 +145,13 @@ class VideoStreaming:
                     cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
                     cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
                     cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-                    
+                    ymin = int(max(1,(boxes[i][0] * imH)))
+                    xmin = int(max(1,(boxes[i][1] * imW)))
+                    ymax = int(min(imH,(boxes[i][2] * imH)))
+                    xmax = int(min(imW,(boxes[i][3] * imW)))
+                    self.ball_x = float(xmin+xmax/2)
+                    self.ball_y = float(ymin+ymax/2)
+                   
 
                     # Record current max
                     max_score = scores[i]
@@ -156,8 +162,9 @@ class VideoStreaming:
                 xmin = int(max(1,(boxes[max_index][1] * imW)))
                 ymax = int(min(imH,(boxes[max_index][2] * imH)))
                 xmax = int(min(imW,(boxes[max_index][3] * imW)))
-                self.face_x = float(xmin+xmax/2)
-                self.face_y = float(ymin+ymax/2)
+                self.ball_x = float(xmin+xmax/2)
+                self.ball_y = float(ymin+ymax/2)
+                print("[ {} , {} ]".format(self.ball_x,self.ball_y))
 
             else:
                 Stop = '#0#0#0#0\n'
@@ -187,8 +194,6 @@ class VideoStreaming:
             self.face_detect(imageFrame, res)
         except:
             pass
-
-
 
         pass
 

@@ -518,9 +518,9 @@ class mywindow(QMainWindow,Ui_Client):
                     self.search
 
                 if self.TCP.found_ball:
-                    
+                    self.center(self.TCP.ball_x, self.servo1)
                     # Orientates car so that ball is directly in front 
-                    # Moves forward until reached edge
+                    # Moves forward until reached edge0
                     if self.edge:
                         destroyed = True
 
@@ -529,6 +529,25 @@ class mywindow(QMainWindow,Ui_Client):
     def search(self):
 
         pass
+
+    def center(self, x_coord, servo):
+        if x_coord > 180 and x_coord < 220:
+            return
+        elif x_coord < 180 and servo > 80: #On left, looking right
+            self.right()
+            time.sleep(.1)
+            self.look_left()
+            pass
+        elif x_coord < 180 and servo < 70: #On left, looking left
+
+            pass
+        elif x_coord > 220 and servo > 80: #On right, looking right
+            self.right()
+            time.sleep(.1)
+            self.look_left()
+            pass
+        elif x_coord > 220 and servo < 70: #On right, looking left
+            pass
 
             
 
