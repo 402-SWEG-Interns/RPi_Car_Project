@@ -505,7 +505,7 @@ class mywindow(QMainWindow,Ui_Client):
         if Mode.text() == "M-Arena": # This code is new; this goes to ../Server/server.py
             if Mode.isChecked() == True:
                 #self.timer.stop()
-                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'six'+self.endChar)
+                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'five'+self.endChar)
          
                                   
     def on_btn_Connect(self):

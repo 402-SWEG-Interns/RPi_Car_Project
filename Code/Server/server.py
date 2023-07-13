@@ -18,6 +18,7 @@ from Thread import *
 from Light import *
 from Ultrasonic import *
 from Line_Tracking import *
+# from Arena import *
 from threading import Timer
 from threading import Thread
 from Command import COMMAND as cmd
@@ -42,6 +43,7 @@ class Server:
         self.adc=Adc()
         self.light=Light()
         self.infrared=Line_Tracking() #
+        # self.arena=Arena() # This is what I'm working on
         self.tcp_Flag = True
         self.sonic=False
         self.Light=False
@@ -138,14 +140,14 @@ class Server:
             self.servo.setServoPwm('1',90)
         except:
             pass
-        try: # This code is entirely new; it may not function as intended
-            stop_thread(self.colorRun)
-            self.PWM.setMotorModel(0,0,0,0)
-            self.servo.setServoPwm('0',90)
-            self.servo.setServoPwm('1',90)
-            # self.led.ledIndex()
-        except:
-            pass # This is the end of the new code
+        # try: # This code is entirely new; it may not function as intended
+        #     stop_thread(self.arenaRun)
+        #     self.PWM.setMotorModel(0,0,0,0)
+        #     self.servo.setServoPwm('0',90)
+        #     self.servo.setServoPwm('1',90)
+        #     # self.led.ledIndex()
+        # except:
+        #     pass # This is the end of the new code
         
     def readdata(self):
         try:
@@ -201,11 +203,11 @@ class Server:
                             self.Mode='four'
                             self.infraredRun=threading.Thread(target=self.infrared.run)
                             self.infraredRun.start()
-                        elif data[1]=='six' or data[1]=="-2": # This code is new; this comes from ../Client/Main.py; it may not function as intended
-                            self.stopMode()
-                            self.Mode='six'
-                            self.arenaRun=threading.Thread(target=self.arena.run)
-                            self.arenaRun.start() # This is the end of the new code
+                        # elif data[1]=='five': # This code is new; this comes from ../Client/Main.py; it may not function as intended
+                        #     self.stopMode()
+                        #     self.Mode='five'
+                        #     self.arenaRun=threading.Thread(target=self.arena.run)
+                        #     self.arenaRun.start() # This is the end of the new code
                             
                     elif (cmd.CMD_MOTOR in data) and self.Mode=='one':
                         try:

@@ -539,13 +539,13 @@ class Ui_Client(object):
         font.setPointSize(10)
         self.Btn_Mode4.setFont(font)
         self.Btn_Mode4.setObjectName("Btn_Mode4")
-        self.Btn_Mode6 = QtWidgets.QRadioButton(Client) # This code is new; it has yet to be wired (change this comment when false)
-        self.Btn_Mode6.setGeometry(QtCore.QRect(230, 560, 90, 30))
+        self.Btn_Mode5 = QtWidgets.QRadioButton(Client) # This code is new; it may not function as intended
+        self.Btn_Mode5.setGeometry(QtCore.QRect(230, 560, 90, 30))
         font = QtGui.QFont()
         font.setFamily("Malgun Gothic")
         font.setPointSize(10)
-        self.Btn_Mode6.setFont(font)
-        self.Btn_Mode6.setObjectName("Btn_Mode6") # This is the end of the new code
+        self.Btn_Mode5.setFont(font)
+        self.Btn_Mode5.setObjectName("Btn_Mode5") # This is the end of the new code
         self.Btn_Tracking_Balls = QtWidgets.QPushButton(Client)
         self.Btn_Tracking_Balls.setGeometry(QtCore.QRect(230, 460, 90, 30))
         font = QtGui.QFont()
@@ -620,7 +620,7 @@ class Ui_Client(object):
         self.Btn_Mode2.setText(_translate("Client", "M-Light"))
         self.Btn_Mode3.setText(_translate("Client", "M-Sonic"))
         self.Btn_Mode4.setText(_translate("Client", "M-Line"))
-        self.Btn_Mode6.setText(_translate("Client", "M-Arena")) # This code is new; it has yet to be wired
+        self.Btn_Mode5.setText(_translate("Client", "M-Arena")) # This code is new; it may not function as intended
         self.Btn_Tracking_Balls.setText(_translate("Client", "Tracing-On"))
         self.Ultrasonic.setText(_translate("Client", "Ultrasonic"))
         self.Light.setText(_translate("Client", "Light"))
