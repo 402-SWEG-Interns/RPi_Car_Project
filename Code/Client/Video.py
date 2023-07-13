@@ -27,7 +27,7 @@ class VideoStreaming:
         self.greenArea = 0
         self.yellowArea = 0
 
-        self.color = "red"
+        self.color = ""
 
 
     def StartTcpClient(self,IP):
