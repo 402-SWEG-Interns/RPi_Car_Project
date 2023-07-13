@@ -262,6 +262,8 @@ class Ui_Client(object):
         self.IP.setFont(font)
         self.IP.setStyleSheet("")
         self.IP.setObjectName("IP")
+        
+        
         self.Color = QtWidgets.QLineEdit(Client)
         self.Color.setGeometry(QtCore.QRect(10, 430, 101, 30))
         font = QtGui.QFont()
@@ -272,13 +274,13 @@ class Ui_Client(object):
         self.Color.setObjectName("Color")
         
         #Insert confirmation button here
-        self.Confirm = QtWidgets.QPushButton(Client)
-        self.Confirm.setGeometry(QtCore.QRect(120, 430, 101, 30))
-        font = QtGui.QFont()
-        font.setFamily("Malgun Gothic")
-        font.setPointSize(10)
-        self.Confirm.setFont(font)
-        self.Confirm.setObjectName("Btn_Confirm")
+        # self.Confirm = QtWidgets.QPushButton(Client)
+        # self.Confirm.setGeometry(QtCore.QRect(120, 430, 101, 30))
+        # font = QtGui.QFont()
+        # font.setFamily("Malgun Gothic")
+        # font.setPointSize(10)
+        # self.Confirm.setFont(font)
+        # self.Confirm.setObjectName("Btn_Confirm")
         
         
         self.Btn_Connect = QtWidgets.QPushButton(Client)
@@ -600,8 +602,7 @@ class Ui_Client(object):
         self.Btn_Right.setText(_translate("Client", "Right"))
         self.Window_Close.setText(_translate("Client", "×"))
         self.IP.setText(_translate("Client", "172.20.1.102"))
-        self.Color.setText(_translate("Client","Sequence"))
-        self.Confirm.setText(_translate("Client", "Confirm")) #Confirm button
+        self.Color.setText(_translate("Client","Blue,Green,Red,Yellow"))
         self.Btn_Connect.setText(_translate("Client", "Connect"))
         self.checkBox_Led1.setText(_translate("Client", "Led1"))
         self.label_Servo2.setText(_translate("Client", "0"))

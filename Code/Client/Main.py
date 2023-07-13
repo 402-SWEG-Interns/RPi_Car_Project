@@ -27,7 +27,9 @@ class mywindow(QMainWindow,Ui_Client):
         self.endChar='\n'
         self.intervalChar='#'
         self.h=self.IP.text()
-        self.TCP=VideoStreaming()
+        self.h=self.Color.text()
+        self.c = self.Color.text()
+        self.TCP=VideoStreaming(self.Color)
         self.servo1=90
         self.servo2=90
         self.label_FineServo2.setText("0")
@@ -147,6 +149,8 @@ class mywindow(QMainWindow,Ui_Client):
         self.Window_Close.clicked.connect(self.close)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.time)
+        
+        
     def mousePressEvent(self, event):
         if event.button()==Qt.LeftButton:
             self.m_drag=True
@@ -483,7 +487,10 @@ class mywindow(QMainWindow,Ui_Client):
     def on_btn_Connect(self):
         if self.Btn_Connect.text() == "Connect":
             self.h=self.IP.text()
+            self.c=self.Color.text()
             self.TCP.StartTcpClient(self.h,)
+            Random = self.c.split(",")
+            print(Random)
             try:
                 self.streaming=Thread(target=self.TCP.streaming,args=(self.h,))
                 self.streaming.start()
@@ -505,9 +512,6 @@ class mywindow(QMainWindow,Ui_Client):
             except:
                 pass
             self.TCP.StopTcpcClient()
-    
-    #Insert confirm function here?
-    
     
 
 
@@ -617,6 +621,7 @@ class mywindow(QMainWindow,Ui_Client):
             for x in leds:
                 self.led_Index= x
                 self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+        
 
 
     def time(self):

@@ -11,10 +11,10 @@ import os
 from PIL import Image
 from multiprocessing import Process
 from Command import COMMAND as cmd
-
+import time
 
 class VideoStreaming:
-    def __init__(self):
+    def __init__(self, Color):
         self.face_cascade = cv2.CascadeClassifier(r'haarcascade_frontalface_default.xml')
         self.video_Flag=True
         self.connect_Flag=False
@@ -25,6 +25,11 @@ class VideoStreaming:
         self.blueArea = 0
         self.greenArea = 0
         self.yellowArea = 0
+        self.color1 = ""
+        self.Color= Color
+        self.last_seen = ''
+        
+        
 
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -278,6 +283,7 @@ class VideoStreaming:
         cv2.imwrite("green.jpg", res_green)
         cv2.imwrite("yellow.jpg", res_yellow)
     
+    
     def colorandball(self,img,color):
         self.color = color
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
@@ -289,25 +295,29 @@ class VideoStreaming:
             
             colorball = ''
             
-            if self.color == 'red':
+            # colorarray = x[i]
+            
+            if (self.color == 'Red'):
                 low = [136,87,111]
                 upp = [180,255,255]
-                colorball = 'Red Ball'
+                colorball = 'Red Ball'           
                 
-            if self.color == 'green':
+            if self.color == 'Green':
                 low = [45,120,100]
                 upp = [90,255,255]
                 colorball = 'Green Ball'
             
-            if self.color == 'blue':
+            if self.color == 'Blue':
                 low = [90,150,150]
                 upp = [110,255,255]
                 colorball = 'Blue Ball'
                 
-            if self.color == 'yellow':
+            if self.color == 'Yellow':
                 low = [25,50,70]
                 upp = [39,255,255]
                 colorball = 'Yellow Ball'
+
+            
                 
             lower = np.array(low, np.uint8)
             upper = np.array(upp, np.uint8)
@@ -434,6 +444,10 @@ class VideoStreaming:
             self.color_detect(img)            
         cv2.imwrite('video.jpg', frame)
         
+            
+    
+                        
+        
     def streaming(self,ip):
         stream_bytes = b' '
         try:
@@ -450,11 +464,18 @@ class VideoStreaming:
                 if self.IsValidImage4Bytes(jpg):
                             image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                             if self.video_Flag:
-                                #self.face_detect(image)
-                                #self.color_detect(image)
-                                # self.colorandball(image,'red')
+                                # self.face_detect(image)
+                                # self.color_detect(image)
+                                # self.c=self.Color.text()
+                                # self.Random = self.Color.split(",")
+                                # print(Random)
+                                
+                                self.HyperspaceTracking()
+                                
+                                    
+                                # self.colorandball(image,'Red')
                                 # self.colorandball(image,'green')
-                                self.colorandball(image,'blue')
+                                # self.colorandball(image,'blue',Randy)
                                 # self.colorandball(image,'yellow')
                                 self.video_Flag=False
             except Exception as e:
@@ -483,6 +504,20 @@ class VideoStreaming:
         except Exception as e:
             print ("Connect to server Failed!: Server IP is right? Server is opened?")
             self.connect_Flag=False
+
+    def HyperspaceTracking(self):
+        self.c=self.Color.text()
+        Random = self.c.split(",")
+        
+        stream_bytes= self.connection.read(4)
+        leng=struct.unpack('<L', stream_bytes[:4])
+        jpg=self.connection.read(leng[0])
+        
+        if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
+            image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+            for i in Random:
+                self.colorandball(image,i)
+
 
 
 if __name__ == '__main__':
