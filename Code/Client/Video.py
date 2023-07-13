@@ -391,6 +391,7 @@ class VideoStreaming:
 
     def red_detect(self,img):
          if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
+            self.red='False'
             MODEL_NAME = 'Sample_TFLite_model'
             GRAPH_NAME = 'detect.tflite'
             LABELMAP_NAME = 'labelmap.txt'
@@ -482,7 +483,14 @@ class VideoStreaming:
                     xmin = int(max(1,(boxes[i][1] * imW)))
                     ymax = int(min(imH,(boxes[i][2] * imH)))
                     xmax = int(min(imW,(boxes[i][3] * imW)))
-                    
+                    self.red='True'
+                    xmiddle = (xmax+xmin/2)
+                    if xmiddle>210:
+                        self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'turn left'+'\n')
+                    if xmiddle<210:
+                        self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'turn right'+'\n')
+                    else:
+                        self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'center'+'\n')
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
                     label = '%s: %d%%' % ('red ball', int(scores[i]*100)) # Example: 'person: 72%'
@@ -493,7 +501,7 @@ class VideoStreaming:
                     cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
 
                     #
-                    self.red='True'
+                    
 
                     # Record current max
                     max_score = scores[i]
