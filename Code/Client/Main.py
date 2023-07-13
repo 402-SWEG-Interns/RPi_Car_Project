@@ -489,7 +489,7 @@ class mywindow(QMainWindow,Ui_Client):
         if Mode.text() == "M-Free":
             if Mode.isChecked() == True:
                 #self.timer.start(34)
-                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar) # This goes to ../Server/server.py
+                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Light":
             if Mode.isChecked() == True:
                 #self.timer.stop()
