@@ -138,13 +138,14 @@ class Server:
             self.servo.setServoPwm('1',90)
         except:
             pass
-        # try: # This code is entirely new; it may not function as intended
-        #     stop_thread(self.colorRun)
-        #     self.PWM.setMotorModel(0,0,0,0)
-        #     self.servo.setServoPwm('0',90)
-        #     self.servo.setServoPwm('1',90)
-        # except:
-        #     pass # This code is entirely new; it may not function as intended
+        try: # This code is entirely new; it may not function as intended
+            stop_thread(self.colorRun)
+            self.PWM.setMotorModel(0,0,0,0)
+            self.servo.setServoPwm('0',90)
+            self.servo.setServoPwm('1',90)
+            # self.led.ledIndex()
+        except:
+            pass # This is the end of the new code
         
     def readdata(self):
         try:
@@ -182,7 +183,7 @@ class Server:
                     if data==None:
                         continue
                     elif cmd.CMD_MODE in data:
-                        if data[1]=='one' or data[1]=="1": # This comes from ../Client/Main.py ; Make this do the color-chase task
+                        if data[1]=='one' or data[1]=="1":
                             self.stopMode()
                             self.Mode='one'
                         elif data[1]=='two' or data[1]=="3":
@@ -200,10 +201,11 @@ class Server:
                             self.Mode='four'
                             self.infraredRun=threading.Thread(target=self.infrared.run)
                             self.infraredRun.start()
-                        # elif data[1]=='six' or data[1]=="-2": # This code is entirely new; it may not function as intended
-                        #     self.stopMode()
-                        #     self.Mode='six'
-                        #     self.colorRun=
+                        elif data[1]=='six' or data[1]=="-2": # This code is new; this comes from ../Client/Main.py; it may not function as intended
+                            self.stopMode()
+                            self.Mode='six'
+                            self.arenaRun=threading.Thread(target=self.arena.run)
+                            self.arenaRun.start() # This is the end of the new code
                             
                     elif (cmd.CMD_MOTOR in data) and self.Mode=='one':
                         try:
