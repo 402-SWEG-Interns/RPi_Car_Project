@@ -93,7 +93,7 @@ class Server:
             #VideoStream.process(self.server_socket)
             with picamera.PiCamera() as camera:
                 camera.resolution = (400,300)      # pi camera resolution
-                camera.framerate = 30               # original: 15 frames/sec   # 1080p @ 30fps, 720p @ 60fps, 640x480p 60/90
+                camera.framerate = 15               # original: 15 frames/sec   # 1080p @ 30fps, 720p @ 60fps, 640x480p 60/90
                 time.sleep(2)                       # give 2 secs for camera to initilize
                 start = time.time()
                 stream = io.BytesIO()
