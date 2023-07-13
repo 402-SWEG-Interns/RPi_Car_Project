@@ -498,7 +498,7 @@ class VideoStreaming:
                     # Record current max
                     max_score = scores[i]
                     max_index = i
-
+    
             if (max_index != 0):
                 ymin = int(max(1,(boxes[max_index][0] * imH)))
                 xmin = int(max(1,(boxes[max_index][1] * imW)))
