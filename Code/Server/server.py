@@ -33,15 +33,15 @@ class StreamingOutput(io.BufferedIOBase):
             self.condition.notify_all()
 
 class Server:   
-    def __init__(self):
-        self.PWM=Motor()
-        self.servo=Servo()
-        self.led=Led()
-        self.ultrasonic=Ultrasonic()
+    def __init__(self): # For the color/object tracking, I need the classes labelled with '#'
+        self.PWM=Motor() #
+        self.servo=Servo() #
+        self.led=Led() # Might not need, but to make up for last week
+        self.ultrasonic=Ultrasonic() # ???
         self.buzzer=Buzzer()
         self.adc=Adc()
         self.light=Light()
-        self.infrared=Line_Tracking()
+        self.infrared=Line_Tracking() #
         self.tcp_Flag = True
         self.sonic=False
         self.Light=False
@@ -93,7 +93,7 @@ class Server:
             #VideoStream.process(self.server_socket)
             with picamera.PiCamera() as camera:
                 camera.resolution = (400,300)      # pi camera resolution
-                camera.framerate = 15               # 15 frames/sec
+                camera.framerate = 30               # original: 15 frames/sec   # 1080p @ 30fps, 720p @ 60fps, 640x480p 60/90
                 time.sleep(2)                       # give 2 secs for camera to initilize
                 start = time.time()
                 stream = io.BytesIO()
@@ -138,6 +138,13 @@ class Server:
             self.servo.setServoPwm('1',90)
         except:
             pass
+        # try: # This code is entirely new; it may not function as intended
+        #     stop_thread(self.colorRun)
+        #     self.PWM.setMotorModel(0,0,0,0)
+        #     self.servo.setServoPwm('0',90)
+        #     self.servo.setServoPwm('1',90)
+        # except:
+        #     pass # This code is entirely new; it may not function as intended
         
     def readdata(self):
         try:
@@ -193,6 +200,10 @@ class Server:
                             self.Mode='four'
                             self.infraredRun=threading.Thread(target=self.infrared.run)
                             self.infraredRun.start()
+                        # elif data[1]=='six' or data[1]=="-2": # This code is entirely new; it may not function as intended
+                        #     self.stopMode()
+                        #     self.Mode='six'
+                        #     self.colorRun=
                             
                     elif (cmd.CMD_MOTOR in data) and self.Mode=='one':
                         try:
