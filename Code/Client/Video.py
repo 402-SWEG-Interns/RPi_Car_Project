@@ -485,11 +485,14 @@ class VideoStreaming:
                     xmax = int(min(imW,(boxes[i][3] * imW)))
                     self.red='True'
                     xmiddle = (xmax+xmin/2)
-                    if xmiddle>210:
+                    if xmiddle>370:
+                        print('left'+str(xmiddle))
                         self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'turn left'+'\n')
-                    if xmiddle<210:
+                    if xmiddle<240:
+                        print('right'+str(xmiddle))
                         self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'turn right'+'\n')
                     else:
+                        print('center'+str(xmiddle))
                         self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'center'+'\n')
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
