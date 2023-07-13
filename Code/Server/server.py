@@ -272,6 +272,7 @@ class Server:
                         except:
                             pass
                     elif cmd.CMD_BALL in data:
+                        print('scan is running')
                         self.scan.lookForBall(eval(data))
                         
 
