@@ -27,7 +27,9 @@ class mywindow(QMainWindow,Ui_Client):
         self.endChar='\n'
         self.intervalChar='#'
         self.h=self.IP.text()
-        self.TCP=VideoStreaming()
+        self.h=self.Color.text()
+        self.c = self.Color.text()
+        self.TCP=VideoStreaming(self.Color)
         self.servo1=90
         self.servo2=90
         self.label_FineServo2.setText("0")
@@ -147,6 +149,8 @@ class mywindow(QMainWindow,Ui_Client):
         self.Window_Close.clicked.connect(self.close)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.time)
+        
+        
     def mousePressEvent(self, event):
         if event.button()==Qt.LeftButton:
             self.m_drag=True
@@ -402,54 +406,30 @@ class mywindow(QMainWindow,Ui_Client):
         B=self.Color_B.text()
         led_Off=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
         color=self.intervalChar+str(R)+self.intervalChar+str(G)+self.intervalChar+str(B)+self.endChar
-        if b.text() == "Led1":
-           self.led_Index=str(0x01)
-           if b.isChecked() == True:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
-           else:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
-        if b.text() == "Led2":
-           self.led_Index=str(0x02)
-           if b.isChecked() == True:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
-           else:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)              
-        if b.text() == "Led3":
-           self.led_Index=str(0x04)
-           if b.isChecked() == True:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
-           else:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
-        if b.text() == "Led4":
-           self.led_Index=str(0x08)
-           if b.isChecked() == True:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
-           else:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
-        if b.text() == "Led5":
-           self.led_Index=str(0x10)
-           if b.isChecked() == True:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
-           else:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
-        if b.text() == "Led6":
-           self.led_Index=str(0x20)
-           if b.isChecked() == True:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
-           else:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
-        if b.text() == "Led7":
-           self.led_Index=str(0x40)
-           if b.isChecked() == True:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
-           else:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
-        if b.text() == "Led8":
-           self.led_Index=str(0x80)
-           if b.isChecked() == True:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
-           else:
-               self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
+        
+        #LED Red
+        if all(x < self.TCP.redArea for x in (self.TCP.blueArea,self.TCP.yellowArea,self.TCP.greenArea)):
+            color=self.intervalChar+str(255)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
+            self.led_Index=str(0x01)
+            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+
+        if any(x  >= self.TCP.redArea for x in (self.TCP.blueArea,self.TCP.yellowArea,self.TCP.greenArea)):
+            color=self.intervalChar+str(255)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
+            self.led_Index=str(0x01)
+            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
+
+        #Led Blue
+        if all(x < self.TCP.blueArea for x in (self.TCP.redArea,self.TCP.yellowArea,self.TCP.greenArea)):
+            color=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(255)+self.endChar
+            self.led_Index=str(0x01)
+            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+
+        if any(x  >= self.TCP.blueArea for x in (self.TCP.redArea,self.TCP.yellowArea,self.TCP.greenArea)):
+            color=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(255)+self.endChar
+            self.led_Index=str(0x01)
+            self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+led_Off)
+
+        
         if b.text() == "Led_Mode1":
            if b.isChecked() == True:
                self.checkBox_Led_Mode2.setChecked(False)
@@ -507,7 +487,10 @@ class mywindow(QMainWindow,Ui_Client):
     def on_btn_Connect(self):
         if self.Btn_Connect.text() == "Connect":
             self.h=self.IP.text()
+            self.c=self.Color.text()
             self.TCP.StartTcpClient(self.h,)
+            Random = self.c.split(",")
+            print(Random)
             try:
                 self.streaming=Thread(target=self.TCP.streaming,args=(self.h,))
                 self.streaming.start()
@@ -529,22 +512,8 @@ class mywindow(QMainWindow,Ui_Client):
             except:
                 pass
             self.TCP.StopTcpcClient()
+    
 
-
-    def close(self):
-        self.timer.stop()
-        try:
-            stop_thread(self.recv)
-            stop_thread(self.streaming)
-        except:
-            pass
-        self.TCP.StopTcpcClient()
-        try:
-            os.remove("video.jpg")
-        except:
-            pass
-        QCoreApplication.instance().quit()
-        os._exit(0)
 
     def Power(self):
         while True:
@@ -616,15 +585,53 @@ class mywindow(QMainWindow,Ui_Client):
             if offset_x > -0.15 and offset_y >-0.15 and offset_x < 0.15 and offset_y <0.15:
                 pass
             else:
-                self.HSlider_Servo1.setValue(self.servo1)
-                self.VSlider_Servo2.setValue(self.servo2)
+                self.HSlider_Servo1.setValue(int(self.servo1))
+                self.VSlider_Servo2.setValue(int(self.servo2))
+
+    def colorDetect(self):
+        leds = (str(0x01),str(0x02),str(0x04),str(0x08),str(0x10),str(0x20),str(0x40),str(0x80))
+        
+        #LED Red
+        #if all(x < self.TCP.redArea for x in (self.TCP.blueArea,self.TCP.yellowArea,self.TCP.greenArea)):
+        if self.TCP.lastSeen == 0:
+            color=self.intervalChar+str(255)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
+            for x in leds:
+                self.led_Index= x
+                self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+
+        #Led Blue
+        #if all(x < self.TCP.blueArea for x in (self.TCP.redArea,self.TCP.yellowArea,self.TCP.greenArea)):
+        elif self.TCP.lastSeen == 2:
+            color=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(255)+self.endChar
+            for x in leds:
+                self.led_Index= x
+                self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+        #led green
+        #if all(x < self.TCP.greenArea for x in (self.TCP.redArea,self.TCP.yellowArea,self.TCP.blueArea)):
+        elif self.TCP.lastSeen == 1:
+            color=self.intervalChar+str(0)+self.intervalChar+str(255)+self.intervalChar+str(0)+self.endChar
+            for x in leds:
+                self.led_Index= x
+                self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+
+        #led yellow
+        #if all(x < self.TCP.yellowArea for x in (self.TCP.redArea,self.TCP.greenArea,self.TCP.blueArea)):
+        elif self.TCP.lastSeen == 3:
+            color=self.intervalChar+str(255)+self.intervalChar+str(255)+self.intervalChar+str(0)+self.endChar
+            for x in leds:
+                self.led_Index= x
+                self.TCP.sendData(cmd.CMD_LED+self.intervalChar+ self.led_Index+color)
+        
+
+
     def time(self):
         self.TCP.video_Flag=False
         try:
             if  self.is_valid_jpg('video.jpg'):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-Off":
-                        self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                    self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                    # self.colorDetect()
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
@@ -636,5 +643,3 @@ if __name__ == '__main__':
     myshow.show();   
     sys.exit(app.exec_())
     
-
-
