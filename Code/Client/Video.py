@@ -493,8 +493,8 @@ class VideoStreaming:
             hvsframe = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
             hsc_dic = {"red":(np.array([136, 87, 111], np.uint8),np.array([180, 255, 255], np.uint8)),
-                       "blue":(np.array([94, 80, 2], np.uint8),np.array([120, 255, 255], np.uint8)),
                        "green":(np.array([45, 100, 72], np.uint8),np.array([90, 255, 255], np.uint8)),
+                       "blue":(np.array([94, 80, 2], np.uint8),np.array([120, 255, 255], np.uint8)),
                        "yellow":(np.array([25, 50, 70], np.uint8),np.array([35, 255, 255], np.uint8))}
 
             limits = hsc_dic[color.lower()]
