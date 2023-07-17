@@ -11,6 +11,7 @@ import os
 from PIL import Image
 from multiprocessing import Process
 from Command import COMMAND as cmd
+import yolov5
 
 class VideoStreaming:
     def __init__(self):
