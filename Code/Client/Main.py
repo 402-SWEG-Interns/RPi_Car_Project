@@ -19,6 +19,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import * 
+
 class mywindow(QMainWindow,Ui_Client):
     def __init__(self):
         global timer
@@ -31,7 +32,7 @@ class mywindow(QMainWindow,Ui_Client):
         self.TCP=VideoStreaming()
         self.servo1=90
         self.servo2=90
-        
+        self.ball_location = ""
         self.label_FineServo2.setText("0")
         self.label_FineServo1.setText("0")
         self.m_DragPosition=self.pos()
@@ -149,6 +150,8 @@ class mywindow(QMainWindow,Ui_Client):
         self.Window_Close.clicked.connect(self.close)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.time)
+        self.spotted = False
+        self.edge = False
     def mousePressEvent(self, event):
         if event.button()==Qt.LeftButton:
             self.m_drag=True
@@ -300,24 +303,31 @@ class mywindow(QMainWindow,Ui_Client):
                 self.Key_Space=False
         
     def forward(self):
-        self.on_btn_ForWard
+        ForWard=self.intervalChar+str(800)+self.intervalChar+str(800)+self.intervalChar+str(750)+self.intervalChar+str(750)+self.endChar
+        self.TCP.sendData(cmd.CMD_MOTOR+ForWard)
     
-    def left(self):
-        self.on_btn_Turn_Left
+    def move_left(self):
+        Turn_Left=self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.endChar
+        self.TCP.sendData(cmd.CMD_MOTOR+ Turn_Left)
 
     def backwards(self):
-        self.on_btn_BackWard
+        BackWard=self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.endChar
+        self.TCP.sendData(cmd.CMD_MOTOR+BackWard)
 
-    def right(self):
-        self.on_btn_Turn_Right
+    def move_right(self):
+        Turn_Right=self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(-1500)+self.intervalChar+str(-1500)+self.endChar
+        self.TCP.sendData(cmd.CMD_MOTOR+Turn_Right)
 
     def stop(self):
-        self.on_btn_Stop
+        Stop=self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.intervalChar+str(0)+self.endChar
+        self.TCP.sendData(cmd.CMD_MOTOR+Stop)
+
 
         
     def on_btn_ForWard(self):
         ForWard=self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.intervalChar+str(1500)+self.endChar
         self.TCP.sendData(cmd.CMD_MOTOR+ForWard)
+        
 
 
     def on_btn_Turn_Left(self):
@@ -356,7 +366,7 @@ class mywindow(QMainWindow,Ui_Client):
         self.HSlider_Servo1.setValue(self.servo1)
 
     def look_left(self):
-        self.on_btn_Light
+        self.on_btn_Left
 
     def look_right(self):
         self.on_btn_Right
@@ -372,8 +382,13 @@ class mywindow(QMainWindow,Ui_Client):
             self.servo1=180
         self.HSlider_Servo1.setValue(self.servo1)
     def on_btn_Home(self):
-        self.servo1=90
-        self.servo2=90
+        self.servo1=72
+        self.servo2=80
+        self.HSlider_Servo1.setValue(self.servo1)
+        self.VSlider_Servo2.setValue(self.servo2)
+    def home(self):
+        self.servo1=72
+        self.servo2=80
         self.HSlider_Servo1.setValue(self.servo1)
         self.VSlider_Servo2.setValue(self.servo2)
     def on_btn_Buzzer(self):
@@ -509,73 +524,186 @@ class mywindow(QMainWindow,Ui_Client):
                self.TCP.sendData(cmd.CMD_LED_MOD+self.intervalChar+'0'+self.endChar)
 
     def search_destroy(self):
+
+        
+        print("Initiating Search and Destroy....")
+        self.forward()
+        time.sleep(.75)
+        self.stop()
         color_order = self.s.split(",")
+        print("Sequence: {}".format(color_order))
         for i in color_order:
-            self.TCP.current_color = i
+            self.stopEdge()
+            self.home()
+            self.stop()
+            self.TCP.found_ball = False
+            self.ball_location = ""
+            self.TCP.ball_x = -1
+            self.onEdge = False
+            self.spotted = False
             destroyed = False
+            self.edge = False
+            self.TCP.current_color = i
+            self.TCP.sendData(cmd.CMD_LED_PATH+self.intervalChar+i+self.endChar)
+
+            time.sleep(1.5)
             while not destroyed:
-                if not self.TCP.found_ball:
-                    self.search()
 
-                if self.TCP.found_ball:
-                    self.center(self.TCP.ball_x, self.servo1)
-                    # Orientates car so that ball is directly in front 
-                    # Moves forward until reached edge0
-                    if self.edge:
+                if self.TCP.found_ball == True:
+                    self.spotted = True
+
+                
+                if self.spotted:
+                    print("Found {} at {}".format(i, self.TCP.ball_x))
+                    
+                    
+                    if self.TCP.ball_x > 200:
+                        self.ball_location = "RIGHT"
+                    elif self.TCP.ball_x < 200:
+                        self.ball_location = "LEFT"
+                    else:
+                        self.ball_location = "CENTER"
+
+                    self.TCP.ball_x = 0
+
+                    while self.ball_location != "CENTER":              
+                        print(self.TCP.ball_x)
+                        self.center(self.TCP.ball_x, self.servo1, self.ball_location, 150, 250)
+
+
+                else:
+   
+                    while not self.spotted:
+                        if self.search() == 1:
+                            self.spotted = True
+            
+                    print("Found {} at {}".format(i, self.TCP.ball_x))
+                    
+
+                    if self.servo1 < 72:
+                        self.ball_location = "LEFT"
+                        while self.servo1 < 72:
+                            self.on_btn_Right()
+                            time.sleep(.3)
+                    elif self.servo1 > 72:
+                        self.ball_location = "RIGHT"
+                        while self.servo1 > 72:
+                            self.on_btn_Left()
+                            time.sleep(.1)
+                    else:
+                        if self.TCP.ball_x > 200:
+                            self.ball_location = "RIGHT"
+                        elif self.TCP.ball_x < 200:
+                            self.ball_location = "LEFT"
+                        else:
+                            self.ball_location = "CENTER"
+                    
+                    self.TCP.ball_x = 0
+                    while self.ball_location != "CENTER":              
+                        print(self.TCP.ball_x)
+                        self.center(self.TCP.ball_x, self.servo1, self.ball_location,230,335)
+
+                self.edge = False
+
+                self.startEdge()
+                self.forward()
+                while not destroyed:
+                    if self.edge == True:
+                        self.stop()
                         destroyed = True
+                        self.spotted = False
 
+                self.stopEdge()
 
+                    
+            time.sleep(.5)
+            self.turnAround()
+                
+                
+    print('done')
+
+                
+
+    def turnAround(self):
+        self.backwards()
+        time.sleep(.75)
+        self.stop()
+        time.sleep(.3)
+        self.move_right()
+        time.sleep(2.15)
+        self.stop()
+
+    def center(self, x_coord, servo, location, min_x, max_x):
+        print("centering...")
+        if location == "LEFT":
+            if x_coord < min_x or x_coord > max_x:
+                self.move_left()
+                time.sleep(.15)
+                self.stop()
+                time.sleep(.75)
+            else:
+                self.ball_location = "CENTER"
+                print("Centered at {}".format(x_coord))
+                return
+        elif location == "RIGHT":
+            if x_coord < min_x or x_coord > max_x:
+                self.move_right()
+                time.sleep(.15)
+                self.stop()
+                time.sleep(.75)
+            else:
+                self.ball_location = "CENTER"
+                return
 
     def search(self):
-
+        print("searching")
         # look right
         for i in range(10):
-            self.look_right()
-            time.sleep(0.3)
+            self.on_btn_Right()
+            time.sleep(0.7)
 
             if self.TCP.found_ball:
-                return
+                return 1
 
         # return to left
         for i in range(17):
-            self.look_left()
-            time.sleep(0.3)
+            self.on_btn_Left()
+            time.sleep(0.7)
 
             if self.TCP.found_ball:
-                return
+                return 1
 
         # return to middle
-        for i in range(10):
-            self.look_right()
-            time.sleep(0.3)
+        for i in range(7):
+            self.on_btn_Right()
+            time.sleep(0.7)
 
             if self.TCP.found_ball:
-                return
-
-        self.forward()
-        time.sleep(2)
-        
-
-    def center(self, x_coord, servo):
-        if x_coord > 180 and x_coord < 220:
-            return
-        elif x_coord < 180 and servo > 80: #On left, looking right
-            self.right()
-            time.sleep(.1)
-            self.look_left()
-            pass
-        elif x_coord < 180 and servo < 70: #On left, looking left
-
-            pass
-        elif x_coord > 220 and servo > 80: #On right, looking right
-            self.right()
-            time.sleep(.1)
-            self.look_left()
-            pass
-        elif x_coord > 220 and servo < 70: #On right, looking left
-            pass
+                return 1
             
+        onEdge=False
+        self.startEdge()
+        self.forward()
+        while not onEdge:
+            if self.edge == True:
+                self.onEdge = False
+                self.stop()
+                break
 
+        self.stopEdge()
+        self.turnAround()
+        self.onEdge = False
+        
+        
+        
+        return -1
+    
+    def startEdge(self):
+        self.TCP.sendData(cmd.CMD_PHASE+self.intervalChar+'start'+self.endChar)
+        
+    def stopEdge(self):
+        self.TCP.sendData(cmd.CMD_PHASE+self.intervalChar+'end'+self.endChar)
+        
 
     def time(self):
         self.TCP.video_Flag=False
@@ -584,24 +712,34 @@ class mywindow(QMainWindow,Ui_Client):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-Off":
                     self.find_Face(self.TCP.face_x,self.TCP.face_y)
+
                     #self.search_destroy
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
  
+
     def on_btn_Mode(self,Mode):
         if Mode.text() == "M-Free":
             if Mode.isChecked() == True:
-                #self.timer.start(34)
+                try:
+                    self.stopEdge
+                    stop_thread(self.search_destroy)
+                except:
+                    pass
+                #self.
+                # r.start(34)
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Search":
             if Mode.isChecked() == True:
                 self.s = self.Sequence.text()
+                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
                 self.attack = Thread(target=self.search_destroy)
+                self.attack.start()
         if Mode.text() == "M-Sonic":
             if Mode.isChecked() == True:
                 #self.timer.stop()
-                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'three'+self.endChar)    
+                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'three'+self.endChar)
         if Mode.text() == "M-Line":
             if Mode.isChecked() == True:
                 #self.timer.stop()
@@ -665,7 +803,7 @@ class mywindow(QMainWindow,Ui_Client):
             while True:
                 Alldata=restCmd+str(self.TCP.recvData())
                 restCmd=""
-                print (Alldata)
+                #print (Alldata)
                 if Alldata=="":
                     break
                 else:
@@ -682,6 +820,11 @@ class mywindow(QMainWindow,Ui_Client):
                     elif cmd. CMD_POWER in Massage:
                         percent_power=int((float(Massage[1])-7)/1.40*100)
                         self.progress_Power.setValue(percent_power) 
+                    elif cmd.CMD_INFRA in Massage:
+                        if Massage[1] == '1':
+                            self.edge = True
+                            print("EDGE")
+                           
     def is_valid_jpg(self,jpg_file):
         try:
             bValid = True
