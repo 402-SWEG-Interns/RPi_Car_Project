@@ -89,3 +89,6 @@ scissors
 teddy bear
 hair drier
 toothbrush
+black stapler
+red stapler
+staplers

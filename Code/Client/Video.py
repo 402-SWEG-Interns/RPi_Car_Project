@@ -11,8 +11,8 @@ import os
 from PIL import Image
 from multiprocessing import Process
 from Command import COMMAND as cmd
-
-class VideoStreaming:
+import yolov5
+class VideoStreaming():
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(r'haarcascade_frontalface_default.xml')
         self.video_Flag=True
@@ -43,23 +43,22 @@ class VideoStreaming:
                 bValid = False
         return bValid
 
-    def face_detect(self,img):
+    def find_bottle(self,img):
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
             MODEL_NAME = 'Sample_TFLite_model'
-            GRAPH_NAME = 'detect.tflite'
             LABELMAP_NAME = 'labelmap.txt'
-            min_conf_threshold = 0.3
-            
+            YOLOV5_GRAPH_NAME = 'model.pt'
+
+            min_conf_threshold = 0.2
             imW, imH = int(400), int(300)
 
             CWD_PATH = os.getcwd()
 
-            PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
-
             PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
-            frame = img.copy()
+            PATH_TO_YOLOV5_GRAPH = os.path.join(CWD_PATH,MODEL_NAME,YOLOV5_GRAPH_NAME)
 
+            frame = img.copy()
             with open(PATH_TO_LABELS, 'r') as f:
                 labels = [line.strip() for line in f.readlines()]
 
@@ -69,56 +68,37 @@ class VideoStreaming:
             if labels[0] == '???':
                 del(labels[0])
 
-            interpreter = tf.lite.Interpreter(model_path=PATH_TO_CKPT)
+            # Use yolov5
+            model = yolov5.load(PATH_TO_YOLOV5_GRAPH)
 
-            interpreter.allocate_tensors()
+            # set model parameters
+            model.conf = 0.25  # NMS confidence threshold
+            model.iou = 0.45  # NMS IoU threshold
+            model.agnostic = False  # NMS class-agnostic
+            model.multi_label = True # NMS multiple labels per box
+            model.max_det = 1000  # maximum number of detections per image
 
-            # Get model details
-            input_details = interpreter.get_input_details()
-            output_details = interpreter.get_output_details()
-            height = input_details[0]['shape'][1]
-            width = input_details[0]['shape'][2]
-
-            floating_model = (input_details[0]['dtype'] == np.float32)
-
-            input_mean = 127.5
-            input_std = 127.5
-
-            # Check output layer name to determine if this model was created with TF2 or TF1,
-            # because outputs are ordered differently for TF2 and TF1 models
-            outname = output_details[0]['name']
-
-            if ('StatefulPartitionedCall' in outname): # This is a TF2 model
-                boxes_idx, classes_idx, scores_idx = 1, 3, 0
-            else: # This is a TF1 model
-                boxes_idx, classes_idx, scores_idx = 0, 1, 2
+            results = model(frame) 
+            predictions = results.pred[0].cpu()
+            boxes = predictions[:, :4]
+            scores = predictions[:, 4]
+            classes = predictions[:, 5]
+            results.render() 
 
             # Initialize frame rate calculation
             frame_rate_calc = 30
 
             frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            frame_resized = cv2.resize(frame_rgb, (width, height))
+            frame_resized = cv2.resize(frame_rgb, (imW, imH))
             input_data = np.expand_dims(frame_resized, axis=0)
-
-            # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
-            if floating_model:
-                input_data = (np.float32(input_data) - input_mean) / input_std
-
-            # Perform the actual detection by running the model with the image as input
-            interpreter.set_tensor(input_details[0]['index'],input_data)
-            interpreter.invoke()
-
-            # Retrieve detection results
-            boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
-            classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
-            scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
 
             max_score = 0
             max_index = 0
 
             # Loop over all detections and draw detection box if confidence is above minimum threshold
             for i in range(len(scores)):
+                curr_score = scores[i].numpy()
                 # Found desired object with decent confidence
                 if ( (scores[i] > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
                     # Get bounding box coordinates and draw box
@@ -127,10 +107,14 @@ class VideoStreaming:
                     xmin = int(max(1,(boxes[i][1] * imW)))
                     ymax = int(min(imH,(boxes[i][2] * imH)))
                     xmax = int(min(imW,(boxes[i][3] * imW)))
-                    
+
+                    #find bounding box center
+                    cx = (xmax + xmin)/ 2 
+                    cy = (ymax + ymin)/ 2 
+
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-                    label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
+                    label = '%s: %d%%' % (object_name, int(curr_score*100)) # Example: 'person: 72%'
                     labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
                     label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
                     cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
@@ -138,27 +122,14 @@ class VideoStreaming:
                     cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
 
                     # Record current max
-                    max_score = scores[i]
+                    max_score = curr_score 
                     max_index = i
-
-            if (max_index != 0):
-                ymin = int(max(1,(boxes[max_index][0] * imH)))
-                xmin = int(max(1,(boxes[max_index][1] * imW)))
-                ymax = int(min(imH,(boxes[max_index][2] * imH)))
-                xmax = int(min(imW,(boxes[max_index][3] * imW)))
-                self.face_x = float(xmin+xmax/2)
-                self.face_y = float(ymin+ymax/2)
-
-            else:
-                Stop = '#0#0#0#0\n'
-                self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
 
             # Draw framerate in corner of frame
             cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-        
+
         cv2.imwrite('video.jpg', frame)
-        
+
     def streaming(self,ip):
         stream_bytes = b' '
         try:
@@ -173,9 +144,11 @@ class VideoStreaming:
                 leng=struct.unpack('<L', stream_bytes[:4])
                 jpg=self.connection.read(leng[0])
                 if self.IsValidImage4Bytes(jpg):
-                            image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-                            if self.video_Flag:
-                                self.face_detect(image)
+                    image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+
+                    if self.video_Flag:
+                        if self.video_Flag:
+                                self.find_bottle(image)
                                 self.video_Flag=False
             except Exception as e:
                 print (e)
