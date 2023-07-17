@@ -23,7 +23,9 @@ class VideoStreaming:
         self.face_y=0
         self.current_color=""
         self.lastSeen = -1
-        self.ball = False #boolean for object detection: if the object is a ball
+        self.found_ball = False #boolean for object detection: if the object is a ball
+        self.ball_x = 0
+        self.ball_y = 0
         # self.redArea = 0
         # self.blueArea = 0
         # self.greenArea = 0
@@ -508,6 +510,7 @@ class VideoStreaming:
             frame_rate_calc = 30
 
             frame_rgb = cv2.cvtColor(_res, cv2.COLOR_BGR2RGB) #added res_red over img
+            
 
             frame_resized = cv2.resize(frame_rgb, (width, height))
             input_data = np.expand_dims(frame_resized, axis=0)
@@ -532,18 +535,24 @@ class VideoStreaming:
             for i in range(len(scores)):
                 # Found desired object with decent confidence
                 # if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and (scores[i] > max_score)):
-                if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and ((labels[int(classes[i])] == 'sports ball') or (labels[int(classes[i])] == 'apple') or (labels[int(classes[i])] == 'toilet') or (labels[int(classes[i])] == 'vase') or (labels[int(classes[i])] == 'bowl') or (labels[int(classes[i])] == 'traffic light') or (labels[int(classes[i])] == 'cup'))):
+                # print(self.found_ball)
+                if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and ((labels[int(classes[i])] == 'sports ball') or (labels[int(classes[i])] == 'apple') )):
+                    #or (labels[int(classes[i])] == 'toilet') or (labels[int(classes[i])] == 'vase') or (labels[int(classes[i])] == 'bowl') or (labels[int(classes[i])] == 'traffic light') or (labels[int(classes[i])] == 'cup')
                     # Get bounding box coordinates and draw box
                     # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
                     ymin = int(max(1,(boxes[i][0] * imH)))
                     xmin = int(max(1,(boxes[i][1] * imW)))
                     ymax = int(min(imH,(boxes[i][2] * imH)))
                     xmax = int(min(imW,(boxes[i][3] * imW)))
+                    self.ball_x = xmin
+                    self.ball_y = (ymin + ymax) / 2
                     
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
                     # label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
                     label = '%s: %d%%' % (_label, int(scores[i]*100)) # Example: 'ballz: 72%'
+                    self.found_ball = True
+                    # print(self.found_ball)
                     labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
                     label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
                     cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)

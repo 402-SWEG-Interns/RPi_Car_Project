@@ -593,7 +593,7 @@ class Ui_Client(object):
         self.Window_Close.setText(_translate("Client", "×"))
         self.IP.setText(_translate("Client", "172.20.0.246"))
 
-        self.COLOR.setText(_translate("Client", "input color order"))
+        self.COLOR.setText(_translate("Client", "red,green,blue,yellow"))
 
         self.Btn_Connect.setText(_translate("Client", "Connect"))
         self.checkBox_Led1.setText(_translate("Client", "Led1"))

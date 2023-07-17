@@ -28,6 +28,8 @@ class mywindow(QMainWindow,Ui_Client):
         self.intervalChar='#'
         self.h=self.IP.text()
         self.c = self.COLOR.text()
+        self.num_turns = ''
+        self.done_scan = False
 
         self.TCP=VideoStreaming()
         self.servo1=90
@@ -501,8 +503,8 @@ class mywindow(QMainWindow,Ui_Client):
             if Mode.isChecked() == True:
                 #self.timer.stop()
                 #self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
-                self.search = Thread(target=self.search)
-                self.search.start()
+                self.runsearch = Thread(target=self.search)
+                self.runsearch.start()
         if Mode.text() == "M-Sonic":
             if Mode.isChecked() == True:
                 #self.timer.stop()
@@ -675,18 +677,41 @@ class mywindow(QMainWindow,Ui_Client):
             for x in leds: 
                 self.led_Index = x 
                 self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color)
+
     def scan(self):
         for i in range(7):
+            if self.TCP.found_ball == True:
+                print('found ball')
+                self.done_scan = True
+                return
+        
+            else:
+                print('no ball found')
+
             self.on_btn_Left()
             time.sleep(0.45)
         for i in range(15):
+            if self.TCP.found_ball == True:
+                print('found ball')
+                self.done_scan = True
+                return
+            else:
+                print('no ball found')
+
             self.on_btn_Right()
             time.sleep(0.45)
+
         for i in range(8):
+            if self.TCP.found_ball == True:
+                print('found ball')
+                self.done_scan = True
+                return
+            else:
+                print('no ball found')
+
             self.on_btn_Left()
             time.sleep(0.45)
         
-
     def search(self):
         order = self.c.split(',')
         print(order)
@@ -694,8 +719,75 @@ class mywindow(QMainWindow,Ui_Client):
         for i in order:
             self.TCP.current_color = i
             print(i)
-            self.scan()
-            time.sleep(1.5)
+            if self.done_scan == False:
+                self.scan()
+                time.sleep(1.5)
+            else:
+                self.adjust()
+                return
+
+    def adjust(self):
+        print('ball is at: {}'.format(self.TCP.ball_x))
+        self.on_btn_Home()
+        x = self.TCP.ball_x
+
+        if x >= 0 and x < 75:
+            for i in range(15):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 75 and x < 100:
+            for i in range(14):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 100 and x < 125:
+            for i in range(7):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 125 and x < 150:
+            for i in range(5):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 150 and x < 200:
+            for i in range(20):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 200 and x <= 250:
+            for i in range(1):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 250 and x < 300:
+            for i in range(30):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 300 and x < 350:
+            for i in range(10):
+                self.on_btn_Turn_Right()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+            
     
     def time(self):
         self.TCP.video_Flag=False
