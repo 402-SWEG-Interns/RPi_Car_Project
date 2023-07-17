@@ -111,6 +111,8 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Mode3.toggled.connect(lambda:self.on_btn_Mode(self.Btn_Mode3))
         self.Btn_Mode4.setChecked(False)
         self.Btn_Mode4.toggled.connect(lambda:self.on_btn_Mode(self.Btn_Mode4))
+        self.Btn_Mode5.setChecked(False)
+        self.Btn_Mode5.toggled.connect(lambda:self.on_btn_Mode(self.Btn_Mode5))
         
         self.Ultrasonic.clicked.connect(self.on_btn_Ultrasonic)
         self.Light.clicked.connect(self.on_btn_Light)
@@ -174,7 +176,7 @@ class mywindow(QMainWindow,Ui_Client):
             self.on_btn_Home()
 
 
-        if(event.key() == Qt.Key_Q):
+        if(event.key() == Qt.Key_Q): # ???
             if self.Btn_Mode1.isChecked() == True:
                 self.Btn_Mode2.setChecked(True)
             elif self.Btn_Mode2.isChecked() == True:
@@ -182,6 +184,8 @@ class mywindow(QMainWindow,Ui_Client):
             elif self.Btn_Mode3.isChecked() == True:
                 self.Btn_Mode4.setChecked(True)
             elif self.Btn_Mode4.isChecked() == True:
+                self.Btn_Mode5.setChecked(True)      # If this proves problematic, comment this out
+            elif self.Btn_Mode5.isChecked() == True: # If this proves problematic, comment this out
                 self.Btn_Mode1.setChecked(True)
 
         if(event.key() == Qt.Key_L):

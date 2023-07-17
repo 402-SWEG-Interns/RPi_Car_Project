@@ -19,6 +19,15 @@ class VideoStreaming:
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
+
+        # self.lastSeen = -1
+
+        # self.redArea = 0
+        # self.greenArea = 0
+        # self.blueArea = 0
+        # self.yellowArea = 0
+
+        self.color = ''
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,9 +52,9 @@ class VideoStreaming:
                 bValid = False
         return bValid
 
-    def object_detect(self,img): # Originally 'face_detect()', but now it is 'object_detect()'
+    def object_detect(self,img,res): # Originally 'face_detect()', but now it is 'object_detect()'
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
-            hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            """hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
             red_lower = np.array([136, 87, 111], np.uint8)
             red_upper = np.array([180, 255, 255], np.uint8)
@@ -77,12 +86,12 @@ class VideoStreaming:
             yellow_mask = cv2.dilate(yellow_mask, kernel)
             res_yellow = cv2.bitwise_and(img, img, mask = yellow_mask)
         
-            contours, hierarchy = cv2.findContours(red_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contours, hierarchy = cv2.findContours(red_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)"""
 
             MODEL_NAME = 'Sample_TFLite_model'
             GRAPH_NAME = 'detect.tflite'
             LABELMAP_NAME = 'labelmap.txt'
-            min_conf_threshold = 0.2 # Original value: 0.3   New Value: 0.2???
+            min_conf_threshold = 0.3 # Original value: 0.3   New Value: 0.2???
             
             imW, imH = int(400), int(300)
 
@@ -130,7 +139,7 @@ class VideoStreaming:
             # Initialize frame rate calculation
             frame_rate_calc = 15
 
-            """
+            """"""
             frame_rgb = cv2.cvtColor(res, cv2.COLOR_BGR2RGB)
 
             cv2.imwrite('frameRGB.jpg', frame_rgb) #the inverted colors???
@@ -196,10 +205,9 @@ class VideoStreaming:
                 Stop = '#0#0#0#0\n'
                 self.sendData(cmd.CMD_MOTOR+Stop)
                 self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
-            """
             
-            """"""
-            frame_rgb = cv2.cvtColor(res_red, cv2.COLOR_BGR2RGB)
+            
+            """frame_rgb = cv2.cvtColor(res_red, cv2.COLOR_BGR2RGB)
 
             cv2.imwrite('frameRGB.jpg', frame_rgb) #the inverted colors???
 
@@ -473,37 +481,36 @@ class VideoStreaming:
             else:
                 Stop = '#0#0#0#0\n'
                 self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
-            """"""
+                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")"""
 
             # Draw framerate in corner of frame
             cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         
         cv2.imwrite('video.jpg', frame)
     
-    # def color_detect(self,img): # Note that RGB is backwards in this function. Instead, it is BGR, so invert where you put your values.
-    #     try:
-    #         hvsframe = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    def color_detect(self,img,color): # Note that RGB is backwards in this function. Instead, it is BGR, so invert where you put your values.
+        try:
+            hvsframe = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    #         hsc_dic = {"red":(np.array([136, 87, 111], np.uint8),np.array([180, 255, 255], np.uint8)),
-    #                    "blue":(np.array([94, 80, 2], np.uint8),np.array([120, 255, 255], np.uint8)),
-    #                    "green":(np.array([45, 100, 72], np.uint8),np.array([90, 255, 255], np.uint8)),
-    #                    "yellow":(np.array([25, 50, 70], np.uint8),np.array([35, 255, 255], np.uint8))}
+            hsc_dic = {"red":(np.array([136, 87, 111], np.uint8),np.array([180, 255, 255], np.uint8)),
+                       "blue":(np.array([94, 80, 2], np.uint8),np.array([120, 255, 255], np.uint8)),
+                       "green":(np.array([45, 100, 72], np.uint8),np.array([90, 255, 255], np.uint8)),
+                       "yellow":(np.array([25, 50, 70], np.uint8),np.array([35, 255, 255], np.uint8))}
 
-    #         limits = hsc_dic[color.lower()]
+            limits = hsc_dic[color.lower()]
 
-    #         mask = cv2.inRange(hvsframe, limits[0], limits[1])
+            mask = cv2.inRange(hvsframe, limits[0], limits[1])
 
-    #         res = cv2.bitwise_and(img,img, mask = mask)
+            res = cv2.bitwise_and(img,img, mask = mask)
 
-    #         self.object_detect(img, res)
+            self.object_detect(img,res)
 
-    #     except: 
-    #         cv2.imwrite('video.jpg',img)
-    #         pass
+        except: 
+            cv2.imwrite('video.jpg',img)
+            pass
 
-        """
-        # Convert the img in 
+        
+        """# Convert the img in 
         # BGR(RGB color space) to
         # HSV(hue-saturation-value)
         # color space
@@ -603,8 +610,8 @@ class VideoStreaming:
         cv2.imwrite('red.jpg',res_red)
         cv2.imwrite('green.jpg',res_green)
         cv2.imwrite('blue.jpg',res_blue)
-        cv2.imwrite('yellow.jpg',res_yellow)
-        """
+        cv2.imwrite('yellow.jpg',res_yellow)"""
+        
 
     def streaming(self,ip):
         stream_bytes = b' '
@@ -622,8 +629,8 @@ class VideoStreaming:
                 if self.IsValidImage4Bytes(jpg):
                             image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                             if self.video_Flag:
-                                self.object_detect(image)
-                                # self.color_detect(image)
+                                # self.object_detect(image)
+                                self.color_detect(image,self.color)
                                 self.video_Flag=False
             except Exception as e:
                 print (e)

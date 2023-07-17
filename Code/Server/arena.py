@@ -22,7 +22,19 @@ from servo import *
 import time
 
 
-
+"""
+In a pseudocode-sort-of-fashion, this is the order of events for the car:
+1) Car moves forward
+2) Servo rotates full peripheral
+    2-a) Nothing spotted: car moves forward until barrier
+        2-a-i) Nothing spotted: car stops, turns around, moves forward, stops, repeats servo
+    2-b) Target spotted: car resets servo (if servo value was X+, it rotates back, car turns to X+ direction; vice versa for X- direction)
+3) Car rotates in direction last spotted; tries to center based on servo alignment-grid
+4) Car moves forward
+    4-a) If ball falls outside of camera's peripheral (or a pre-determined range), car stops to re-assess
+    4-b) Else car continues until black line is detected
+        4-b-i) If black line is detected, car switches to next color, turns around, and goes to center of arena
+"""
 
 
 class Arena:
@@ -63,8 +75,10 @@ class Arena:
     def run(self):
         self.motor.setMotorModel(0,0,0,0)
         
-        moving = True # 'tracking' can be renamed to 'patrol'; either way, this is supposed to prevent the car from leaving the arena; this boolean is 'moving' for when the patrolling occurs
-        while moving:
+        patrol = True
+        pursuit = False
+        while patrol:
+            LMR=0x00 # Detects Black
             """
             Sensors | Truth | Sum | Action
             lmr     | 000   |  0  | nul
@@ -76,22 +90,12 @@ class Arena:
             LMr     | 110   |  6  | Turn Right - Hard
             LMR     | 111   |  7  | U-Turn
             """
-            LMR=0x00 # Detects Black
             if GPIO.input(self.IRR)==self.io: # Right Sensor
                 LMR=(LMR | 1)
-            #     Rs = True
-            # else:
-            #     Rs = False
             if GPIO.input(self.IRM)==self.io: # Middle Sensor
                 LMR=(LMR | 2)
-            #     Ms = True
-            # else:
-            #     Ms = False
             if GPIO.input(self.IRL)==self.io: # Left Sensor
                 LMR=(LMR | 4)
-            #     Ls = True
-            # else:
-            #     Ls = False
 
             if   LMR==0: # nul
                 pass
