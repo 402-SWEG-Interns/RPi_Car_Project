@@ -27,6 +27,9 @@ class mywindow(QMainWindow,Ui_Client):
         self.endChar='\n'
         self.intervalChar='#'
         self.h=self.IP.text()
+        # self.c = self.COLOR.text() #
+        # self.num_turns = '' #
+        # self.done_scan = False #
         self.TCP=VideoStreaming()
         self.servo1=90
         self.servo2=90
