@@ -471,8 +471,6 @@ class mywindow(QMainWindow,Ui_Client):
     def on_btn_Mode(self,Mode):
         if Mode.text() == "M-Free":
             if Mode.isChecked() == True:
-                print("Stop Sequencing Searching")
-                stop_thread(self.Sequence_searching)
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Light":
             if Mode.isChecked() == True:
@@ -642,7 +640,7 @@ class mywindow(QMainWindow,Ui_Client):
             print(e)
         self.TCP.video_Flag=True
         
-    def Sequence_searching(self):
+    def Sequence_searching(self):   #Searches for the Ball
         sequence = self.c.split(",")
         for x in sequence:
             self.TCP.color = x
@@ -654,16 +652,15 @@ class mywindow(QMainWindow,Ui_Client):
             #     print("Target not sighted")
             
     
-    def SequenceLocking(self):
-        for x in range(1):
-            if self.TCP.TargetFound == True:
-                print("Target located")
-                self.done_scan == True
-                return
-            else:
-                print("Target not sighted")
+    def SequenceLocking(self):      #Targeting System, Locks on the target
+        if self.TCP.TargetFound == True:
+            print("Target located")
+            self.done_scan == True
+            return
+        else:
+            print("Target not sighted")
             
-            
+               
         
             
 if __name__ == '__main__':
