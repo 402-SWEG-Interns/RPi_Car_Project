@@ -11,7 +11,7 @@ import os
 from PIL import Image
 from multiprocessing import Process
 from Command import COMMAND as cmd
-import yolov5
+from ultralytics import yolov5
 class VideoStreaming():
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(r'haarcascade_frontalface_default.xml')
