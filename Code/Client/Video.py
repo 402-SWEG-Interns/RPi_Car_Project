@@ -391,7 +391,6 @@ class VideoStreaming:
 
     def red_detect(self,img):
          if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
-            self.red='False'
             MODEL_NAME = 'Sample_TFLite_model'
             GRAPH_NAME = 'detect.tflite'
             LABELMAP_NAME = 'labelmap.txt'
@@ -483,17 +482,21 @@ class VideoStreaming:
                     xmin = int(max(1,(boxes[i][1] * imW)))
                     ymax = int(min(imH,(boxes[i][2] * imH)))
                     xmax = int(min(imW,(boxes[i][3] * imW)))
-                    self.red='True'
-                    xmiddle = (xmax+xmin/2)
-                    if xmiddle>370:
-                        print('left'+str(xmiddle))
-                        self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'turn left'+'\n')
-                    if xmiddle<240:
-                        print('right'+str(xmiddle))
-                        self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'turn right'+'\n')
-                    else:
-                        print('center'+str(xmiddle))
-                        self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'center'+'\n')
+                    if self.red =='False':
+                        self.sendData(cmd.CMD_BALL+'#'+'True'+'\n')
+                        self.red = 'True'
+                        print(self.red)
+                    # xmiddle = (xmax+xmin/2)
+                    # if xmiddle>370:
+                    #     print('left'+str(xmiddle))
+                    #     self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'turn left'+'\n')
+                    # if xmiddle<240:
+                    #     print('right'+str(xmiddle))
+                    #     self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'turn right'+'\n')
+                    # else:
+                    #     print('center'+str(xmiddle))
+                    #     self.sendData(cmd.CMD_BALL+'#'+self.red+'#'+'center'+'\n')
+                    
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
                     label = '%s: %d%%' % ('red ball', int(scores[i]*100)) # Example: 'person: 72%'
@@ -509,19 +512,21 @@ class VideoStreaming:
                     # Record current max
                     max_score = scores[i]
                     max_index = i
-    
-            if (max_index != 0):
-                ymin = int(max(1,(boxes[max_index][0] * imH)))
-                xmin = int(max(1,(boxes[max_index][1] * imW)))
-                ymax = int(min(imH,(boxes[max_index][2] * imH)))
-                xmax = int(min(imW,(boxes[max_index][3] * imW)))
-                self.face_x = float(xmin+xmax/2)
-                self.face_y = float(ymin+ymax/2)
+                else:
+                    if self.red== 'False':
+                        self.sendData(cmd.CMD_BALL+'#'+'False'+'\n')
+            # if (max_index != 0):
+            #     ymin = int(max(1,(boxes[max_index][0] * imH)))
+            #     xmin = int(max(1,(boxes[max_index][1] * imW)))
+            #     ymax = int(min(imH,(boxes[max_index][2] * imH)))
+            #     xmax = int(min(imW,(boxes[max_index][3] * imW)))
+            #     self.face_x = float(xmin+xmax/2)
+            #     self.face_y = float(ymin+ymax/2)
 
-            else:
-                Stop = '#0#0#0#0\n'
-                self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
+            # else:
+            #     Stop = '#0#0#0#0\n'
+            #     self.sendData(cmd.CMD_MOTOR+Stop)
+            #     self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
 
          cv2.imwrite('video.jpg', frame)
 
@@ -586,7 +591,7 @@ class VideoStreaming:
                 boxes_idx, classes_idx, scores_idx = 0, 1, 2
 
             # Initialize frame rate calculation
-            frame_rate_calc = 60
+            frame_rate_calc = 30
 
             frame_resized = cv2.resize(frame_rgb, (width, height))
             input_data = np.expand_dims(frame_resized, axis=0)
