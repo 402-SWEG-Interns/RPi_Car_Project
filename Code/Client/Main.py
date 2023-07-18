@@ -27,9 +27,9 @@ class mywindow(QMainWindow,Ui_Client):
         self.endChar='\n'
         self.intervalChar='#'
         self.h=self.IP.text()
-        self.h=self.Color.text()
         self.c = self.Color.text()
-        self.TCP=VideoStreaming(self.Color)
+        print(self.Color, "video", self.c)
+        self.TCP=VideoStreaming()
         self.servo1=90
         self.servo2=90
         self.label_FineServo2.setText("0")
@@ -51,6 +51,9 @@ class mywindow(QMainWindow,Ui_Client):
         self.label_Video.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
         self.label_Servo1.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
         self.label_Servo2.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
+        
+        
+        self.done_scan = False
         
         self.label_FineServo1.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
         self.label_FineServo2.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
@@ -468,12 +471,15 @@ class mywindow(QMainWindow,Ui_Client):
     def on_btn_Mode(self,Mode):
         if Mode.text() == "M-Free":
             if Mode.isChecked() == True:
-                #self.timer.start(34)
+                print("Stop Sequencing Searching")
+                stop_thread(self.Sequence_searching)
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Light":
             if Mode.isChecked() == True:
                 #self.timer.stop()
-                self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
+                # self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
+                self.start_sequence_tracking = Thread(target = self.Sequence_searching)
+                self.start_sequence_tracking.start()
         if Mode.text() == "M-Sonic":
             if Mode.isChecked() == True:
                 #self.timer.stop()
@@ -488,7 +494,7 @@ class mywindow(QMainWindow,Ui_Client):
         if self.Btn_Connect.text() == "Connect":
             self.h=self.IP.text()
             self.c=self.Color.text()
-            self.TCP.StartTcpClient(self.h,)
+            self.TCP.StartTcpClient(self.h)
             Random = self.c.split(",")
             print(Random)
             try:
@@ -630,11 +636,35 @@ class mywindow(QMainWindow,Ui_Client):
             if  self.is_valid_jpg('video.jpg'):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-Off":
-                    self.find_Face(self.TCP.face_x,self.TCP.face_y)
-                    # self.colorDetect()
+                    # self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                    self.colorDetect()
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
+        
+    def Sequence_searching(self):
+        sequence = self.c.split(",")
+        for x in sequence:
+            self.TCP.color = x
+            print(x)
+            if self.done_scan == False:
+                self.SequenceLocking()
+                time.sleep(1.5)
+            else:
+                print("Target not sighted")
+            
+    
+    def SequenceLocking(self):
+        for x in range(1):
+            if self.TCP.TargetFound == False:
+                print("Target located")
+                time.sleep(.5)
+                self.done_scan == True
+                return
+            else:
+                print("Target not sighted")
+            
+            
         
             
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ from Command import COMMAND as cmd
 import time
 
 class VideoStreaming:
-    def __init__(self, Color):
+    def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(r'haarcascade_frontalface_default.xml')
         self.video_Flag=True
         self.connect_Flag=False
@@ -25,9 +25,10 @@ class VideoStreaming:
         self.blueArea = 0
         self.greenArea = 0
         self.yellowArea = 0
-        self.color1 = ""
-        self.Color= Color
-        self.last_seen = ''
+        self.current_color = ''
+
+        self.color = ''
+        self.TargetFound = False
         
         
 
@@ -41,7 +42,7 @@ class VideoStreaming:
             self.client_socket.close()
             self.client_socket1.close()
         except:
-            pass
+            print("Stop TCP")
 
     def IsValidImage4Bytes(self,buf):
         bValid = True
@@ -53,6 +54,7 @@ class VideoStreaming:
                 Image.open(io.BytesIO(buf)).verify()
             except:  
                 bValid = False
+                print("is valid image")
         return bValid
 
     def face_detect(self,img):
@@ -287,20 +289,19 @@ class VideoStreaming:
     def colorandball(self,img,color):
         self.color = color
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
-            
             hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
             
             low = []
             upp = []
             
+            print(self.color)
+            
             colorball = ''
             
-            # colorarray = x[i]
-            
-            if (self.color == 'Red'):
+            if self.color == 'Red':
                 low = [136,87,111]
                 upp = [180,255,255]
-                colorball = 'Red Ball'           
+                colorball = 'Red Ball'         
                 
             if self.color == 'Green':
                 low = [45,120,100]
@@ -321,6 +322,7 @@ class VideoStreaming:
                 
             lower = np.array(low, np.uint8)
             upper = np.array(upp, np.uint8)
+            
             
             _mask = cv2.inRange(hsvFrame, lower, upper)
             
@@ -416,6 +418,7 @@ class VideoStreaming:
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
                     label = '%s: %d%%' % (colorball, int(scores[i]*100)) # Example: 'person: 72%'
+                    self.TargetFound = True
                     labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
                     label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
                     cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
@@ -445,22 +448,36 @@ class VideoStreaming:
         cv2.imwrite('video.jpg', frame)
         
             
-    
+    # def HyperspaceTracking(self):
+    #     self.c=self.Color.text()
+    #     Random = self.c.split(",")
+        
+    #     stream_bytes= self.connection.read(4)
+    #     leng=struct.unpack('<L', stream_bytes[:4])
+    #     jpg=self.connection.read(leng[0])
+        
+    #     if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
+    #         image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+    #         for i in Random:
+    #             self.colorandball(image,i)
                         
         
     def streaming(self,ip):
         stream_bytes = b' '
         try:
             self.client_socket.connect((ip, 8000))
+            self.client_socket.settimeout(5)
             self.connection = self.client_socket.makefile('rb')
-        except:
-            #print "command port connect failed"
-            pass
+        except Exception as e:
+            print(e)
+            print ("command port connect failed")
         while True:
-            try:
+            # try:
                 stream_bytes= self.connection.read(4)
+                # print("done reading")
                 leng=struct.unpack('<L', stream_bytes[:4])
                 jpg=self.connection.read(leng[0])
+                # print("here1")
                 if self.IsValidImage4Bytes(jpg):
                             image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                             if self.video_Flag:
@@ -469,18 +486,21 @@ class VideoStreaming:
                                 # self.c=self.Color.text()
                                 # self.Random = self.Color.split(",")
                                 # print(Random)
-                                
-                                self.HyperspaceTracking()
-                                
-                                    
+                                # self.colorandball(image,self.current_color)
+                                # print(self.Color)
+                                try:
+                                    self.colorandball(image,self.color)
+                                except:
+                                    self.color_detect(image)
                                 # self.colorandball(image,'Red')
                                 # self.colorandball(image,'green')
                                 # self.colorandball(image,'blue',Randy)
                                 # self.colorandball(image,'yellow')
-                                self.video_Flag=False
-            except Exception as e:
-                print (e)
-                break
+                            self.video_Flag=False
+            # except Exception as e:
+            #     print (e)
+            #     print("streaming")
+            #     break
                  
     def sendData(self,s):
         if self.connect_Flag:
@@ -492,7 +512,7 @@ class VideoStreaming:
         try:
             data=self.client_socket1.recv(1024).decode('utf-8')
         except:
-            pass
+            print("recvData")
         return data
 
 
@@ -505,18 +525,7 @@ class VideoStreaming:
             print ("Connect to server Failed!: Server IP is right? Server is opened?")
             self.connect_Flag=False
 
-    def HyperspaceTracking(self):
-        self.c=self.Color.text()
-        Random = self.c.split(",")
-        
-        stream_bytes= self.connection.read(4)
-        leng=struct.unpack('<L', stream_bytes[:4])
-        jpg=self.connection.read(leng[0])
-        
-        if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
-            image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-            for i in Random:
-                self.colorandball(image,i)
+    
 
 
 
