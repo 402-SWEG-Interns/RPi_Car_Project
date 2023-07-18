@@ -288,13 +288,13 @@ class VideoStreaming:
     
     def colorandball(self,img,color):
         self.color = color
+        self.TargetFound = True
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
             hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
             
             low = []
             upp = []
             
-            print(self.color)
             
             colorball = ''
             
@@ -418,7 +418,6 @@ class VideoStreaming:
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
                     label = '%s: %d%%' % (colorball, int(scores[i]*100)) # Example: 'person: 72%'
-                    self.TargetFound = True
                     labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
                     label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
                     cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)

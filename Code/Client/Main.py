@@ -650,15 +650,14 @@ class mywindow(QMainWindow,Ui_Client):
             if self.done_scan == False:
                 self.SequenceLocking()
                 time.sleep(1.5)
-            else:
-                print("Target not sighted")
+            # else:
+            #     print("Target not sighted")
             
     
     def SequenceLocking(self):
         for x in range(1):
-            if self.TCP.TargetFound == False:
+            if self.TCP.TargetFound == True:
                 print("Target located")
-                time.sleep(.5)
                 self.done_scan == True
                 return
             else:
