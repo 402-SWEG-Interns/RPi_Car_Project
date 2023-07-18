@@ -629,6 +629,163 @@ class mywindow(QMainWindow,Ui_Client):
             else:
                 self.HSlider_Servo1.setValue(int(self.servo1))
                 self.VSlider_Servo2.setValue(int(self.servo2))
+
+    """def colorDetect(self): 
+
+        leds = (str(0x01),str(0x02),str(0x04),str(0x08),str(0x10),str(0x20),str(0x40),str(0x80)) 
+        # R = self.Color_R.text() 
+        # G = self.Color_G.text() 
+        # B = self.Color_B.text() 
+        # color = self.intervalChar + str(R) + self.intervalChar + str(G) + self.intervalChar + str(B) + self.endChar 
+
+        # Red LED 
+
+        # if all(x < self.TCP.redArea for x in (self.TCP.blueArea, self.TCP.yellowArea, self.TCP.greenArea)):
+        if self.TCP.lastSeen == 0: 
+            color  = self.intervalChar + str(255) + self.intervalChar + str(0) + self.intervalChar + str(0) + self.endChar 
+
+            for x in leds: 
+                self.led_Index = x             
+                self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
+         
+        # Blue LED 
+        # if all(x < self.TCP.blueArea for x in (self.TCP.redArea, self.TCP.yellowArea, self.TCP.greenArea)): 
+        if self.TCP.lastSeen == 2:
+            color  = self.intervalChar + str(0) + self.intervalChar + str(0) + self.intervalChar + str(255) + self.endChar 
+
+            for x in leds: 
+                self.led_Index = x 
+                self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
+
+        # Green LED 
+        # if all(x < self.TCP.greenArea for x in (self.TCP.blueArea, self.TCP.yellowArea, self.TCP.redArea)): 
+        if self.TCP.lastSeen == 1:
+            color  = self.intervalChar + str(0) + self.intervalChar + str(255) + self.intervalChar + str(0) + self.endChar 
+
+            for x in leds: 
+                self.led_Index = x 
+                self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color) 
+                
+
+        # Yellow LED 
+        # if all(x < self.TCP.yellowArea for x in (self.TCP.blueArea, self.TCP.redArea, self.TCP.greenArea)): 
+        if self.TCP.lastSeen == 3:
+            color  = self.intervalChar + str(255) + self.intervalChar + str(255) + self.intervalChar + str(0) + self.endChar 
+
+            for x in leds: 
+                self.led_Index = x 
+                self.TCP.sendData(cmd.CMD_LED + self.intervalChar + self.led_Index + color)
+
+    def scan(self):
+        for i in range(7):
+            if self.TCP.found_ball == True:
+                print('found ball')
+                self.done_scan = True
+                return
+        
+            else:
+                print('no ball found')
+
+            self.on_btn_Left()
+            time.sleep(0.45)
+        for i in range(15):
+            if self.TCP.found_ball == True:
+                print('found ball')
+                self.done_scan = True
+                return
+            else:
+                print('no ball found')
+
+            self.on_btn_Right()
+            time.sleep(0.45)
+
+        for i in range(8):
+            if self.TCP.found_ball == True:
+                print('found ball')
+                self.done_scan = True
+                return
+            else:
+                print('no ball found')
+
+            self.on_btn_Left()
+            time.sleep(0.45)
+        
+    def search(self):
+        order = self.c.split(',')
+        print(order)
+
+        for i in order:
+            self.TCP.current_color = i
+            print(i)
+            if self.done_scan == False:
+                self.scan()
+                time.sleep(1.5)
+            else:
+                self.adjust()
+                return
+
+    def adjust(self):
+        print('ball is at: {}'.format(self.TCP.ball_x))
+        self.on_btn_Home()
+        x = self.TCP.ball_x
+
+        if x >= 0 and x < 75:
+            for i in range(15):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 75 and x < 100:
+            for i in range(14):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 100 and x < 125:
+            for i in range(7):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 125 and x < 150:
+            for i in range(5):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 150 and x < 200:
+            for i in range(20):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 200 and x <= 250:
+            for i in range(1):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 250 and x < 300:
+            for i in range(30):
+                self.on_btn_Turn_Left()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return
+        elif x >= 300 and x < 350:
+            for i in range(10):
+                self.on_btn_Turn_Right()
+                time.sleep(.25)
+            for i in range(100):
+                self.on_btn_ForWard()
+            return"""
+    
     def time(self):
         self.TCP.video_Flag=False
         try:
