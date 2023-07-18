@@ -11,7 +11,7 @@ import os
 from PIL import Image
 from multiprocessing import Process
 from Command import COMMAND as cmd
-from ultralytics import yolov5
+import yolov5
 class VideoStreaming():
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(r'haarcascade_frontalface_default.xml')
@@ -47,7 +47,7 @@ class VideoStreaming():
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
             MODEL_NAME = 'Sample_TFLite_model'
             LABELMAP_NAME = 'labelmap.txt'
-            YOLOV5_GRAPH_NAME = 'model.pt'
+            YOLOV5_GRAPH_NAME = 'allbest.pt'
 
             min_conf_threshold = 0.2
             imW, imH = int(400), int(300)
