@@ -11,6 +11,7 @@ import os
 from PIL import Image
 from multiprocessing import Process
 from Command import COMMAND as cmd
+import time
 
 class VideoStreaming:
     def __init__(self):
@@ -19,7 +20,7 @@ class VideoStreaming:
         self.connect_Flag=False
         self.object_x=0
         self.object_y=0
-        self.lastSeen = -1
+        self.lastSeen = 'nul'
         self.ball_found = False # boolean for object detection: if the object is a ball
         # self.redArea = 0
         # self.greenArea = 0
@@ -209,28 +210,28 @@ class VideoStreaming:
         cv2.imwrite('video.jpg', frame)
     
     def color_detect(self,img,color): # Note that RGB is backwards in this function. Instead, it is BGR, so invert where you put your values.
-        try:
-            hvsframe = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # try:
+        #     hvsframe = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-            hsc_dic = {"red":(np.array([136, 87, 111], np.uint8),np.array([180, 255, 255], np.uint8)),
-                       "green":(np.array([45, 100, 72], np.uint8),np.array([90, 255, 255], np.uint8)),
-                       "blue":(np.array([94, 80, 2], np.uint8),np.array([120, 255, 255], np.uint8)),
-                       "yellow":(np.array([25, 50, 70], np.uint8),np.array([35, 255, 255], np.uint8))}
+        #     hsc_dic = {"red":(np.array([136, 87, 111], np.uint8),np.array([180, 255, 255], np.uint8)),
+        #                "green":(np.array([45, 100, 72], np.uint8),np.array([90, 255, 255], np.uint8)),
+        #                "blue":(np.array([94, 80, 2], np.uint8),np.array([120, 255, 255], np.uint8)),
+        #                "yellow":(np.array([25, 50, 70], np.uint8),np.array([35, 255, 255], np.uint8))}
 
-            limits = hsc_dic[color.lower()]
+        #     limits = hsc_dic[color.lower()]
 
-            mask = cv2.inRange(hvsframe, limits[0], limits[1])
+        #     mask = cv2.inRange(hvsframe, limits[0], limits[1])
 
-            res = cv2.bitwise_and(img,img, mask = mask)
+        #     res = cv2.bitwise_and(img,img, mask = mask)
 
-            self.object_detect(img,res)
+        #     self.object_detect(img,res)
 
-        except: 
-            cv2.imwrite('video.jpg',img)
-            pass
+        # except: 
+        #     cv2.imwrite('video.jpg',img)
+        #     pass
 
         
-        """# Convert the img in 
+        # Convert the img in 
         # BGR(RGB color space) to
         # HSV(hue-saturation-value)
         # color space
@@ -288,7 +289,7 @@ class VideoStreaming:
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 3000):
-                self.lastSeen = 0
+                self.lastSeen = 'red'
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
               
@@ -300,7 +301,7 @@ class VideoStreaming:
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 3000):
-                self.lastSeen = 1
+                self.lastSeen = 'green'
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y),  (x + w, y + h), (0, 255, 0), 2)
               
@@ -312,7 +313,7 @@ class VideoStreaming:
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 3000):
-                self.lastSeen = 2
+                self.lastSeen = 'blue'
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
               
@@ -324,7 +325,7 @@ class VideoStreaming:
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
             if(area > 3000):
-                self.lastSeen = 3
+                self.lastSeen = 'yellow'
                 x, y, w, h = cv2.boundingRect(contour)
                 img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
               
@@ -337,14 +338,14 @@ class VideoStreaming:
         # cv2.imwrite('yellow.jpg',res_yellow)
         
         # cv2.imshow("Multiple Color Detection in Real-Time", img)
-        cv2.imwrite('video.jpg', img)"""
-
+        cv2.imwrite('video.jpg', img)
+    
     def color_ball_detect(self,img,color):
         self.color = color
 
-        if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
+        if sys.platform.startswith('win') or sys.platform.startswith('darwin'): 
 
-            hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
             l = []
             u = []
             _label = ''
@@ -353,28 +354,29 @@ class VideoStreaming:
                 l = [136,87,111]
                 u = [180,255,255]
                 _label = 'red ball'
-                self.lastSeen = 0
+                self.lastSeen = 'red'
             elif self.color == 'green':
                 # l = [45,100,72]
                 # u = [90,255,255]
                 l = [36,70,40]
                 u = [86,255,255]
                 _label = 'green ball'
-                self.lastSeen = 1
+                self.lastSeen = 'green'
             elif self.color == 'blue':
                 l = [90,150,150]
                 u = [110,255,255]
                 _label = 'blue ball'
-                self.lastSeen = 2
+                self.lastSeen = 'blue'
             elif self.color == 'yellow':
                 # l = [21,100,100]
                 # u = [30,255,255]
                 l = [10,90,180]
                 u = [35,255,255]
                 _label = 'yellow ball'
-                self.lastSeen = 3  
+                self.lastSeen = 'yellow'
+            
 
-                _lower = np.array(l, np.uint8) 
+            _lower = np.array(l, np.uint8) 
             _upper = np.array(u, np.uint8) 
             _mask = cv2.inRange(hsvFrame, _lower, _upper) 
 
@@ -469,8 +471,8 @@ class VideoStreaming:
                     xmin = int(max(1,(boxes[i][1] * imW)))
                     ymax = int(min(imH,(boxes[i][2] * imH)))
                     xmax = int(min(imW,(boxes[i][3] * imW)))
-                    self.ball_x = xmin
-                    self.ball_y = (ymin + ymax) / 2
+                    self.object_x = xmin
+                    self.object_y = (ymin + ymax) / 2
                     
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
@@ -493,8 +495,8 @@ class VideoStreaming:
                 xmin = int(max(1,(boxes[max_index][1] * imW)))
                 ymax = int(min(imH,(boxes[max_index][2] * imH)))
                 xmax = int(min(imW,(boxes[max_index][3] * imW)))
-                self.face_x = float(xmin+xmax/2)
-                self.face_y = float(ymin+ymax/2)
+                self.object_x = float(xmin+xmax/2)
+                self.object_y = float(ymin+ymax/2)
 
             else:
                 Stop = '#0#0#0#0\n'
