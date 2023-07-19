@@ -145,15 +145,17 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Connect.clicked.connect(self.on_btn_Connect)
 
         # ----- Experimental UI Functionality ----- #
-        self.Btn_C1st.clicked.connect(self.on_btn_C1st)
-        self.Btn_C2nd.clicked.connect(self.on_btn_C2nd)
-        self.Btn_C3rd.clicked.connect(self.on_btn_C3rd)
-        self.Btn_C4th.clicked.connect(self.on_btn_C4th)
-
         self.C1st = 'none'
         self.C2nd = 'none'
         self.C3rd = 'none'
         self.C4th = 'none'
+
+        self.Btn_C1st.clicked.connect(lambda:self.on_btn_C(self.Btn_C1st, self.C1st))
+        self.Btn_C2nd.clicked.connect(lambda:self.on_btn_C(self.Btn_C2nd, self.C2nd))
+        self.Btn_C3rd.clicked.connect(lambda:self.on_btn_C(self.Btn_C3rd, self.C3rd))
+        self.Btn_C4th.clicked.connect(lambda:self.on_btn_C(self.Btn_C4th, self.C4th))
+
+        self.prevMode = self.Btn_Mode1.text()
         # ----- Experimental UX Functionality ----- #
         
         
@@ -505,23 +507,30 @@ class mywindow(QMainWindow,Ui_Client):
         if Mode.text() == "M-Free":
             if Mode.isChecked() == True:
                 #self.timer.start(34)
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Light":
             if Mode.isChecked() == True:
                 #self.timer.stop()
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
         if Mode.text() == "M-Sonic":
             if Mode.isChecked() == True:
                 #self.timer.stop()
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'three'+self.endChar)    
         if Mode.text() == "M-Line":
             if Mode.isChecked() == True:
                 #self.timer.stop()
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'four'+self.endChar)
         if Mode.text() == "M-Arena": # This code is new; this goes to ../Server/server.py
             if Mode.isChecked() == True:
                 #self.timer.stop()
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'five'+self.endChar)
+        
+        self.prevMode = Mode.text()
          
                                   
     def on_btn_Connect(self):
@@ -552,20 +561,20 @@ class mywindow(QMainWindow,Ui_Client):
     
 
     # ----- Experimental UI Functionality ----- #
-    def on_btn_C1st(self):
-        if self.Btn_C1st.text() == "none":
-            self.C1st = 'red'
-        elif self.Btn_C1st.text() == "red":
-            self.C1st = 'green'
-        elif self.Btn_C1st.text() == "green":
-            self.C1st = 'blue'
-        elif self.Btn_C1st.text() == "blue":
-            self.C1st = 'yellow'
-        elif self.Btn_C1st.text() == "yellow":
-            self.C1st = 'none'
+    def on_btn_C(self,C,color): # Replace self.Btn_C1st with C parameter, but also find a way to include self.C1st in the parameters
+        if C.text() == "none":
+            color = 'red'
+        elif C.text() == "red":
+            color = 'green'
+        elif C.text() == "green":
+            color = 'blue'
+        elif C.text() == "blue":
+            color = 'yellow'
+        elif C.text() == "yellow":
+            color = 'none'
         
-        self.Btn_C1st.setText(f"{self.C1st}")
-        print(f"1st color has been set to {self.C1st}\n")
+        C.setText(f"{color}")
+        print(f"Color has been set to {color}\n")
 
     def on_btn_C2nd(self):
         if self.Btn_C2nd.text() == "none":
