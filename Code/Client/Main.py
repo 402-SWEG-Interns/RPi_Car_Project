@@ -147,6 +147,17 @@ class mywindow(QMainWindow,Ui_Client):
         self.Window_Close.clicked.connect(self.close)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.time)
+        
+        self.colors = []
+        self.colorDefine()
+
+        self.colorNum = 0
+        print(self.colorNum)
+        self.TCP.color = self.colors[self.colorNum]
+
+
+
+
     def mousePressEvent(self, event):
         if event.button()==Qt.LeftButton:
             self.m_drag=True
@@ -621,9 +632,30 @@ class mywindow(QMainWindow,Ui_Client):
                         self.Ultrasonic.setText('Obstruction:%s cm'%Massage[1])
                     elif cmd.CMD_LIGHT in Massage:
                         self.Light.setText("Left:"+Massage[1]+'V'+' '+"Right:"+Massage[2]+'V')
-                    elif cmd. CMD_POWER in Massage:
+                    elif cmd.CMD_POWER in Massage:
                         percent_power=int((float(Massage[1])-7)/1.40*100)
-                        self.progress_Power.setValue(percent_power) 
+                        self.progress_Power.setValue(percent_power)
+                    elif cmd.CMD_COLOR in Massage:  #the change color thingy
+                        
+                        if Massage[1] == "7":
+                            self.colorNum += 1
+                            print(self.TCP.color)
+
+                            if self.colorNum < len(self.colors):
+                                self.TCP.color = self.colors[self.colorNum]
+                                print("collor is now", self.colors[self.colorNum])
+
+                                
+
+                            else:
+                                pass
+                            time.sleep(2)
+
+                        else:
+                            print("color does not change")
+                            
+
+                     
     def is_valid_jpg(self,jpg_file):
         try:
             bValid = True
@@ -652,18 +684,30 @@ class mywindow(QMainWindow,Ui_Client):
         else:
             self.Btn_Tracking_Faces.setText("Tracing-On")
     def find_Face(self,face_x,face_y):
-        if face_x!=0 and face_y!=0:
-            offset_x=float(face_x/400-0.5)*2
-            offset_y=float(face_y/300-0.5)*2
-            delta_degree_x = 4* offset_x
-            delta_degree_y = -4 * offset_y
-            self.servo1=self.servo1+delta_degree_x
-            self.servo2=self.servo2+delta_degree_y
-            if offset_x > -0.15 and offset_y >-0.15 and offset_x < 0.15 and offset_y <0.15:
-                pass
-            else:
-                self.HSlider_Servo1.setValue(int(self.servo1))
-                self.VSlider_Servo2.setValue(int(self.servo2))
+
+            if face_x!=0 and face_y!=0:
+                offset_x=float(face_x/400-0.5)*2
+                offset_y=float(face_y/300-0.5)*2
+                delta_degree_x = 4* offset_x
+                delta_degree_y = -4 * offset_y
+                self.servo1=self.servo1+delta_degree_x
+                self.servo2=self.servo2+delta_degree_y
+                if offset_x > -.1 and offset_x < .1:
+                    pass
+                else:
+                    self.HSlider_Servo1.setValue(int(self.servo1))
+
+                self.TCP.sendData(cmd.CMD_DATA+self.intervalChar+ "0" + self.intervalChar + str(self.TCP.face_x) + self.endChar)
+                self.TCP.sendData(cmd.CMD_DATA+self.intervalChar+ "1" + self.intervalChar + str(self.TCP.objectFOund) + self.endChar)
+                self.TCP.sendData(cmd.CMD_DATA+self.intervalChar+ "2" + self.intervalChar + str(int(self.servo1)) + self.endChar)
+            
+
+                
+
+    def colorDefine(self):
+        colorOrder = input("enter colors red, blue, green and yellow in any order")
+
+        self.colors = colorOrder.split()
 
     def colorDetect(self):
         leds = (str(0x01),str(0x02),str(0x04),str(0x08),str(0x10),str(0x20),str(0x40),str(0x80))
@@ -707,7 +751,11 @@ class mywindow(QMainWindow,Ui_Client):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-Off":
                     self.find_Face(self.TCP.face_x,self.TCP.face_y)
-                    self.colorDetect()
+                    #self.TCP.sendData(cmd.CMD_DATA+self.intervalChar+ "0" + self.intervalChar + str(self.TCP.face_x) + self.endChar)
+                    #self.TCP.sendData(cmd.CMD_DATA+self.intervalChar+ "1" + self.intervalChar + str(self.TCP.objectFOund) + self.endChar)
+                
+                    #self.colorDetect()
+                    
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True

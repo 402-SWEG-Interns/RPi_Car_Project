@@ -19,6 +19,7 @@ class VideoStreaming:
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
+        
 
         self.lastSeen = -1
 
@@ -27,7 +28,10 @@ class VideoStreaming:
         self.greenArea = 0
         self.yellowArea = 0
 
+
+
         self.color = ""
+        self.objectFOund = False
 
 
     def StartTcpClient(self,IP):
@@ -161,7 +165,12 @@ class VideoStreaming:
 
                     # Record current max
                     max_score = scores[i]
-                    max_index = i
+                    max_index = i 
+                    self.objectFOund = True
+
+                else:
+                    self.face_x = 0
+                    
 
             if (max_index != 0):
                 ymin = int(max(1,(boxes[max_index][0] * imH)))
@@ -170,12 +179,20 @@ class VideoStreaming:
                 xmax = int(min(imW,(boxes[max_index][3] * imW)))
                 self.face_x = float(xmin+xmax/2)
                 self.face_y = float(ymin+ymax/2)
+                
+
+               
 
             else:
                 Stop = '#0#0#0#0\n'
                 self.sendData(cmd.CMD_MOTOR+Stop)
                 self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
 
+                
+
+
+            self.face_x = (xmin + xmax) / 2
+            self.face_y = (ymin + ymax) / 2
             
             
 
@@ -183,6 +200,7 @@ class VideoStreaming:
             cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         
         cv2.imwrite('video.jpg', frame)
+        print(self.objectFOund)
         
 
     def color_detect(self,img, color):
@@ -200,10 +218,15 @@ class VideoStreaming:
 
             res = cv2.bitwise_and(img,img, mask = mask)
 
+         
             self.face_detect(img, res)
+            
 
         except: 
             cv2.imwrite('video.jpg',img)
+            self.objectFOund = False
+            self.face_x = 0
+            #print(self.objectFOund)
             pass
         
 
@@ -253,4 +276,5 @@ class VideoStreaming:
             self.connect_Flag=False
 
 if __name__ == '__main__':
+
     pass

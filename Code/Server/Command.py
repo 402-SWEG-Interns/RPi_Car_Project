@@ -8,5 +8,7 @@ class COMMAND:
     CMD_LIGHT = "CMD_LIGHT"
     CMD_POWER = "CMD_POWER" 
     CMD_MODE ="CMD_MODE"
+    CMD_DATA = "CMD_DATA"
+    CMD_COLOR = "CMD_COLOR"
     def __init__(self):
         pass

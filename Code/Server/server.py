@@ -34,6 +34,7 @@ class StreamingOutput(io.BufferedIOBase):
 
 class Server:   
     def __init__(self):
+
         self.PWM=Motor()
         self.servo=Servo()
         self.led=Led()
@@ -48,6 +49,11 @@ class Server:
         self.Mode = 'one'
         self.endChar='\n'
         self.intervalChar='#'
+
+        
+
+        
+
     def get_interface_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(s.fileno(),
@@ -140,6 +146,7 @@ class Server:
             pass
         
     def readdata(self):
+        print("read")
         try:
             try:
                 self.connection1,self.client_address1 = self.server_socket1.accept()
@@ -269,6 +276,29 @@ class Server:
                             self.send(cmd.CMD_POWER+'#'+str(ADC_Power)+'\n')
                         except:
                             pass
+                    elif cmd.CMD_DATA in data:
+                        if data[1] == '0':
+                            self.infrared.x_pos = float(data[2])
+                            #print(self.infrared.x_pos)
+                        elif data[1] == '1':
+                            self.infrared.objFound = data[2]
+                            #print(self.infrared.objFound)
+                        elif data[1] == '2':
+                            self.infrared.servoX = int(data[2])
+
+                    
+
+                            
+                        
+                    
+
+
+
+
+
+
+                        
+                    
         except Exception as e: 
             print(e)
         self.StopTcpServer()    
@@ -276,11 +306,14 @@ class Server:
         if self.sonic==True:
             ADC_Ultrasonic=self.ultrasonic.get_distance()
             if ADC_Ultrasonic==self.ultrasonic.get_distance():
-                try:
-                    self.send(cmd.CMD_SONIC+"#"+str(ADC_Ultrasonic)+'\n')
-                except:
-                    self.sonic=False
-            self.ultrasonicTimer = threading.Timer(0.13,self.sendUltrasonic)
+                
+                #self.send(cmd.CMD_SONIC+"#"+str(ADC_Ultrasonic)+'\n')
+                self.send(cmd.CMD_COLOR+'#'+str(self.infrared.LMR)+'\n')
+                #if self.infrared.switchColor == 7:
+                    #self.infrared.switchColor == 0
+                    
+                
+            self.ultrasonicTimer = threading.Timer(.5,self.sendUltrasonic)
             self.ultrasonicTimer.start()
     def sendLight(self):
         if self.Light==True:
@@ -295,7 +328,16 @@ class Server:
     def Power(self):
         while True:
             ADC_Power=self.adc.recvADC(2)*3
-            time.sleep(3)
+            
+            """ self.send(cmd.CMD_COLOR+'#'+str(self.x_pos)+'\n')
+            if self.x_pos == True:
+                self.x_pos = False
+                print("hi") """
+
+            
+            
+
+ 
             if ADC_Power < 6.8:
                 for i in range(4):
                     self.buzzer.run('1')
