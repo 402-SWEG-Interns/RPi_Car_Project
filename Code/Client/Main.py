@@ -143,6 +143,18 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Buzzer.released.connect(self.on_btn_Buzzer)
         
         self.Btn_Connect.clicked.connect(self.on_btn_Connect)
+
+        # ----- Experimental UI Functionality ----- #
+        self.Btn_C1st.clicked.connect(self.on_btn_C1st)
+        self.Btn_C2nd.clicked.connect(self.on_btn_C2nd)
+        self.Btn_C3rd.clicked.connect(self.on_btn_C3rd)
+        self.Btn_C4th.clicked.connect(self.on_btn_C4th)
+
+        self.C1st = 'none'
+        self.C2nd = 'none'
+        self.C3rd = 'none'
+        self.C4th = 'none'
+        # ----- Experimental UX Functionality ----- #
         
         
         self.Window_Min.clicked.connect(self.windowMinimumed)
@@ -537,6 +549,69 @@ class mywindow(QMainWindow,Ui_Client):
             except:
                 pass
             self.TCP.StopTcpcClient()
+    
+
+    # ----- Experimental UI Functionality ----- #
+    def on_btn_C1st(self):
+        if self.Btn_C1st.text() == "none":
+            self.C1st = 'red'
+        elif self.Btn_C1st.text() == "red":
+            self.C1st = 'green'
+        elif self.Btn_C1st.text() == "green":
+            self.C1st = 'blue'
+        elif self.Btn_C1st.text() == "blue":
+            self.C1st = 'yellow'
+        elif self.Btn_C1st.text() == "yellow":
+            self.C1st = 'none'
+        
+        self.Btn_C1st.setText(f"{self.C1st}")
+        print(f"1st color has been set to {self.C1st}\n")
+
+    def on_btn_C2nd(self):
+        if self.Btn_C2nd.text() == "none":
+            self.C2nd = 'red'
+        elif self.Btn_C2nd.text() == "red":
+            self.C2nd = 'green'
+        elif self.Btn_C2nd.text() == "green":
+            self.C2nd = 'blue'
+        elif self.Btn_C2nd.text() == "blue":
+            self.C2nd = 'yellow'
+        elif self.Btn_C2nd.text() == "yellow":
+            self.C2nd = 'none'
+        
+        self.Btn_C2nd.setText(f"{self.C2nd}")
+        print(f"2nd color has been set to {self.C2nd}\n")
+    
+    def on_btn_C3rd(self):
+        if self.Btn_C3rd.text() == "none":
+            self.C3rd = 'red'
+        elif self.Btn_C3rd.text() == "red":
+            self.C3rd = 'green'
+        elif self.Btn_C3rd.text() == "green":
+            self.C3rd = 'blue'
+        elif self.Btn_C3rd.text() == "blue":
+            self.C3rd = 'yellow'
+        elif self.Btn_C3rd.text() == "yellow":
+            self.C3rd = 'none'
+        
+        self.Btn_C3rd.setText(f"{self.C3rd}")
+        print(f"3rd color has been set to {self.C3rd}\n")
+    
+    def on_btn_C4th(self):
+        if self.Btn_C4th.text() == "none":
+            self.C4th = 'red'
+        elif self.Btn_C4th.text() == "red":
+            self.C4th = 'green'
+        elif self.Btn_C4th.text() == "green":
+            self.C4th = 'blue'
+        elif self.Btn_C4th.text() == "blue":
+            self.C4th = 'yellow'
+        elif self.Btn_C4th.text() == "yellow":
+            self.C4th = 'none'
+        
+        self.Btn_C4th.setText(f"{self.C4th}")
+        print(f"4th color has been set to {self.C4th}\n")
+    # ----- Experimental UI Functionality ----- #
 
 
     def close(self):
