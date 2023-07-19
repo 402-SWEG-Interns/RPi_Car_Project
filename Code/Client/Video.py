@@ -127,7 +127,7 @@ class VideoStreaming():
                     # Record current max
                     max_score = curr_score 
                     max_index = i
-                    print(results.pandas.xyxy[0])
+                    print(results.pandas().xyxy[0])
                     if object_name == self.search_object:
                         if int(cx) >=0 and  int(cx) <= 400:
                             self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'True'+'\n')
