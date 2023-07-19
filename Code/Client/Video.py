@@ -106,8 +106,8 @@ class VideoStreaming():
                     # Get bounding box coordinates and draw box
                     # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
                     
-                    ymin = int(max(1,(boxes[i][0])))
-                    xmin = int(max(1,(boxes[i][1] * imW)))
+                    ymin = int(max(1,(boxes[i][0]*imH)))
+                    xmin = int(max(1,(boxes[i][1])))
                     ymax = int(min(imH,(boxes[i][2] * imH)))
                     xmax = int(min(imW,(boxes[i][3])))
 
@@ -128,6 +128,7 @@ class VideoStreaming():
                     max_score = curr_score 
                     max_index = i
                     print(results.pandas().xyxy[0])
+                    print('actual',xmin,cx,xmax)
                     if object_name == self.search_object:
                         if int(cx) >=0 and  int(cx) <= 400:
                             self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'True'+'\n')
