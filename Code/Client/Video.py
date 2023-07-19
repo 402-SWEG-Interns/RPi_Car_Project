@@ -47,7 +47,7 @@ class VideoStreaming():
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
             MODEL_NAME = 'Sample_TFLite_model'
             LABELMAP_NAME = 'labelmap.txt'
-            YOLOV5_GRAPH_NAME = 'allbest.pt'
+            YOLOV5_GRAPH_NAME = 'best.pt'
 
             min_conf_threshold = 0.2
             imW, imH = int(400), int(300)
