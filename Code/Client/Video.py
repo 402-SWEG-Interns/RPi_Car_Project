@@ -19,6 +19,8 @@ class VideoStreaming():
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
+        self.object_list = ['Candle', 'Rhombic Dodecahedron']
+        self.search_object = 'Rhombic Dodecahedron'
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -47,7 +49,7 @@ class VideoStreaming():
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
             MODEL_NAME = 'Sample_TFLite_model'
             LABELMAP_NAME = 'labelmap.txt'
-            YOLOV5_GRAPH_NAME = 'best.pt'
+            YOLOV5_GRAPH_NAME = 'three.pt'
 
             min_conf_threshold = 0.2
             imW, imH = int(400), int(300)
@@ -93,20 +95,21 @@ class VideoStreaming():
             frame_resized = cv2.resize(frame_rgb, (imW, imH))
             input_data = np.expand_dims(frame_resized, axis=0)
 
-            max_score = 0
+            max_score = 0.0
             max_index = 0
 
             # Loop over all detections and draw detection box if confidence is above minimum threshold
-            for i in range(len(scores)):
+            for i in range(len(scores)):      
                 curr_score = scores[i].numpy()
                 # Found desired object with decent confidence
-                if ( (scores[i] > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
+                if ( (curr_score > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
                     # Get bounding box coordinates and draw box
                     # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-                    ymin = int(max(1,(boxes[i][0] * imH)))
+                    
+                    ymin = int(max(1,(boxes[i][0])))
                     xmin = int(max(1,(boxes[i][1] * imW)))
                     ymax = int(min(imH,(boxes[i][2] * imH)))
-                    xmax = int(min(imW,(boxes[i][3] * imW)))
+                    xmax = int(min(imW,(boxes[i][3])))
 
                     #find bounding box center
                     cx = (xmax + xmin)/ 2 
@@ -124,7 +127,16 @@ class VideoStreaming():
                     # Record current max
                     max_score = curr_score 
                     max_index = i
-
+                    print(results.pandas.xyxy[0])
+                    if object_name == self.search_object:
+                        if int(cx) >=0 and  int(cx) <= 400:
+                            self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'True'+'\n')
+                        else:
+                            self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'False'+'\n')
+                    else :
+                        self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
+                else:
+                    self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
             # Draw framerate in corner of frame
             cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
