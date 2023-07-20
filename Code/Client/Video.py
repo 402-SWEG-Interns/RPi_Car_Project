@@ -12,6 +12,7 @@ from PIL import Image
 from multiprocessing import Process
 from Command import COMMAND as cmd
 import yolov5
+import time
 class VideoStreaming():
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(r'haarcascade_frontalface_default.xml')
@@ -20,7 +21,10 @@ class VideoStreaming():
         self.face_x=0
         self.face_y=0
         self.object_list = ['Candle', 'Rhombic Dodecahedron']
-        self.search_object = 'Rhombic Dodecahedron'
+        self.object_class = 1
+
+        self.model = yolov5.load('C:\\Users\\SERN_INTERN\\402-SWEG-Interns_\\RPi_Car_Project\\Code\\Client\\Sample_TFLite_model\\objectmodel.pt')
+
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,8 +54,8 @@ class VideoStreaming():
             MODEL_NAME = 'Sample_TFLite_model'
             LABELMAP_NAME = 'labelmap.txt'
             YOLOV5_GRAPH_NAME = 'objectmodel.pt'
+            check = False
 
-            min_conf_threshold = 0.2
             imW, imH = int(400), int(300)
 
             CWD_PATH = os.getcwd()
@@ -64,82 +68,104 @@ class VideoStreaming():
             with open(PATH_TO_LABELS, 'r') as f:
                 labels = [line.strip() for line in f.readlines()]
 
-            # Have to do a weird fix for label map if using the COCO "starter model" from
-            # https://www.tensorflow.org/lite/models/object_detection/overview
-            # First label is '???', which has to be removed.
-            if labels[0] == '???':
-                del(labels[0])
 
             # Use yolov5
-            model = yolov5.load(PATH_TO_YOLOV5_GRAPH)
+            # model = yolov5.load(PATH_TO_YOLOV5_GRAPH)
 
             # set model parameters
-            model.conf = 0.25  # NMS confidence threshold
-            model.iou = 0.45  # NMS IoU threshold
-            model.agnostic = False  # NMS class-agnostic
-            model.multi_label = True # NMS multiple labels per box
-            model.max_det = 1000  # maximum number of detections per image
+            self.model.conf = 0.25  # NMS confidence threshold
+            self.model.iou = 0.45  # NMS IoU threshold
+            self.model.agnostic = False  # NMS class-agnostic
+            self.model.multi_label = True # NMS multiple labels per box
+            self.model.max_det = 1000  # maximum number of detections per image
 
-            results = model(frame) 
+            results = self.model(frame) 
             predictions = results.pred[0].cpu()
-            boxes = predictions[:, :4]
-            scores = predictions[:, 4]
-            classes = predictions[:, 5]
+            boxes = results.xyxy[0].numpy() #str(predictions[:, :4].numpy())
+            scores = str(predictions[:, 4].numpy())
+            classes = str(predictions[:, 5].numpy())
             results.render() 
 
-            # Initialize frame rate calculation
-            frame_rate_calc = 30
+      
+            # print(boxes)
+            # print(classes)
+          
+            # print(str(results.xyxyn[0][:,-1].numpy()))
+            # print(results.pandas().xyxy[0])
 
             frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             frame_resized = cv2.resize(frame_rgb, (imW, imH))
             input_data = np.expand_dims(frame_resized, axis=0)
+          
+            
 
-            max_score = 0.0
-            max_index = 0
-
-            # Loop over all detections and draw detection box if confidence is above minimum threshold
-            for i in range(len(scores)):      
-                curr_score = scores[i].numpy()
-                # Found desired object with decent confidence
-                if ( (curr_score > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
-                    # Get bounding box coordinates and draw box
-                    # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-                    
-                    ymin = int(max(1,(boxes[i][0]*imH)))
-                    xmin = int(max(1,(boxes[i][1])))
-                    ymax = int(min(imH,(boxes[i][2] * imH)))
-                    xmax = int(min(imW,(boxes[i][3])))
-
-                    #find bounding box center
-                    cx = (xmax + xmin)/ 2 
-                    cy = (ymax + ymin)/ 2 
-
-                    # Draw label
-                    object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-                    label = '%s: %d%%' % (object_name, int(curr_score*100)) # Example: 'person: 72%'
-                    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-                    label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
-                    cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-                    cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-
-                    # Record current max
-                    max_score = curr_score 
-                    max_index = i
-                    print(results.pandas().xyxy[0])
-                    print('actual',xmin,cx,xmax)
-                    if object_name == self.search_object:
-                        if int(cx) >=0 and  int(cx) <= 400:
-                            self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'True'+'\n')
-                        else:
-                            self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'False'+'\n')
-                    else :
-                        self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
+          
+            for box in boxes:
+             if box[5] ==  self.object_class:
+                xmin = box[0]
+                xmax = box[2]
+                check = True
+                cx = (xmin+xmax)/2
+                if cx >=180 and cx<=290:
+                    self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'True'+'\n')
                 else:
-                    self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
-            # Draw framerate in corner of frame
-            cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+                    self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'False'+'\n')
+
+            if not check:
+                self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
+            
+
+                
+
+
+
+
+
+        #     max_score = 0.0
+        #     max_index = 0
+
+        #     # Loop over all detections and draw detection box if confidence is above minimum threshold
+        #     for i in range(len(scores)):      
+        #         curr_score = scores[i].numpy()
+        #         # Found desired object with decent confidence
+        #         if ( (curr_score > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
+        #             # Get bounding box coordinates and draw box
+        #             # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
+                    
+        #             ymin = int(max(1,(boxes[i][0]*imH)))
+        #             xmin = int(max(1,(boxes[i][1])))
+        #             ymax = int(min(imH,(boxes[i][2] * imH)))
+        #             xmax = int(min(imW,(boxes[i][3])))
+
+        #             #find bounding box center
+        #             cx = (xmax + xmin)/ 2 
+        #             cy = (ymax + ymin)/ 2 
+
+        #             # Draw label
+        #             object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
+        #             label = '%s: %d%%' % (object_name, int(curr_score*100)) # Example: 'person: 72%'
+        #             labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
+        #             label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
+        #             cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+        #             cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
+        #             cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
+
+        # #             # Record current max
+        #             max_score = curr_score 
+        #             max_index = i
+        #             print(str(results.xyxyn[0][:,-1].numpy()))
+        #             if object_name == self.search_object:
+        #                 if int(cx) >=0 and  int(cx) <= 400:
+        #                     self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'True'+'\n')
+        #                 else:
+        #                     self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'False'+'\n')
+        #             else :
+        #                 self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
+        #         else:
+        #             self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
+        #     # Draw framerate in corner of frame
+        #     cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
         cv2.imwrite('video.jpg', frame)
 
