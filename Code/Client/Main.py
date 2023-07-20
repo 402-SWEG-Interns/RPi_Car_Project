@@ -111,6 +111,8 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Mode3.toggled.connect(lambda:self.on_btn_Mode(self.Btn_Mode3))
         self.Btn_Mode4.setChecked(False)
         self.Btn_Mode4.toggled.connect(lambda:self.on_btn_Mode(self.Btn_Mode4))
+        self.Btn_Mode5.setChecked(False)
+        self.Btn_Mode5.toggled.connect(lambda:self.on_btn_Mode(self.Btn_Mode5))
         
         self.Ultrasonic.clicked.connect(self.on_btn_Ultrasonic)
         self.Light.clicked.connect(self.on_btn_Light)
@@ -127,20 +129,29 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Turn_Right.pressed.connect(self.on_btn_Turn_Right)
         self.Btn_Turn_Right.released.connect(self.on_btn_Stop)
 
-        self.Btn_Video.clicked.connect(self.on_btn_video)
+        self.Btn_Video.clicked.connect(self.on_btn_video) # The most important button of them all
 
         self.Btn_Up.clicked.connect(self.on_btn_Up)
         self.Btn_Left.clicked.connect(self.on_btn_Left)
         self.Btn_Down.clicked.connect(self.on_btn_Down)
         self.Btn_Home.clicked.connect(self.on_btn_Home)
         self.Btn_Right.clicked.connect(self.on_btn_Right)
-        self.Btn_Tracking_Balls.clicked.connect(self.Tracking_Ball)
+        self.Btn_Tracking_Objects.clicked.connect(self.Tracking_Object)
         
 
         self.Btn_Buzzer.pressed.connect(self.on_btn_Buzzer)
         self.Btn_Buzzer.released.connect(self.on_btn_Buzzer)
         
         self.Btn_Connect.clicked.connect(self.on_btn_Connect)
+
+        # ----- Experimental UI Functionality ----- #
+        self.Btn_C1st.clicked.connect(lambda:self.on_btn_C(self.Btn_C1st, 1))
+        self.Btn_C2nd.clicked.connect(lambda:self.on_btn_C(self.Btn_C2nd, 2))
+        self.Btn_C3rd.clicked.connect(lambda:self.on_btn_C(self.Btn_C3rd, 3))
+        self.Btn_C4th.clicked.connect(lambda:self.on_btn_C(self.Btn_C4th, 4))
+
+        self.prevMode = self.Btn_Mode1.text()
+        # ----- Experimental UX Functionality ----- #
         
         
         self.Window_Min.clicked.connect(self.windowMinimumed)
@@ -174,7 +185,7 @@ class mywindow(QMainWindow,Ui_Client):
             self.on_btn_Home()
 
 
-        if(event.key() == Qt.Key_Q):
+        if(event.key() == Qt.Key_Q): # ???
             if self.Btn_Mode1.isChecked() == True:
                 self.Btn_Mode2.setChecked(True)
             elif self.Btn_Mode2.isChecked() == True:
@@ -182,6 +193,8 @@ class mywindow(QMainWindow,Ui_Client):
             elif self.Btn_Mode3.isChecked() == True:
                 self.Btn_Mode4.setChecked(True)
             elif self.Btn_Mode4.isChecked() == True:
+                self.Btn_Mode5.setChecked(True)      # If this proves problematic, comment this out
+            elif self.Btn_Mode5.isChecked() == True: # If this proves problematic, comment this out
                 self.Btn_Mode1.setChecked(True)
 
         if(event.key() == Qt.Key_L):
@@ -489,41 +502,52 @@ class mywindow(QMainWindow,Ui_Client):
         if Mode.text() == "M-Free":
             if Mode.isChecked() == True:
                 #self.timer.start(34)
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Light":
             if Mode.isChecked() == True:
                 #self.timer.stop()
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
         if Mode.text() == "M-Sonic":
             if Mode.isChecked() == True:
                 #self.timer.stop()
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'three'+self.endChar)    
         if Mode.text() == "M-Line":
             if Mode.isChecked() == True:
                 #self.timer.stop()
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'four'+self.endChar)
         if Mode.text() == "M-Arena": # This code is new; this goes to ../Server/server.py
             if Mode.isChecked() == True:
                 #self.timer.stop()
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\nColor Order: {self.Btn_C1st.text()}, {self.Btn_C2nd.text()}, {self.Btn_C3rd.text()}, {self.Btn_C4th.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'five'+self.endChar)
-         
-                                  
+        
+        self.prevMode = Mode.text()
+
+
     def on_btn_Connect(self):
         if self.Btn_Connect.text() == "Connect":
-            self.h=self.IP.text()
-            self.TCP.StartTcpClient(self.h,)
-            try:
-                self.streaming=Thread(target=self.TCP.streaming,args=(self.h,))
-                self.streaming.start()
-            except:
-                print ('video error')
-            try:
-                self.recv=Thread(target=self.recvmassage)
-                self.recv.start()
-            except:
-                print ('recv error')
-            self.Btn_Connect.setText( "Disconnect")
-            print ('Server address:'+str(self.h)+'\n')
+            if self.Btn_C1st.text() != self.Btn_C2nd.text() != self.Btn_C3rd.text() != self.Btn_C4th.text() != 'none':
+                self.h=self.IP.text()
+                self.TCP.StartTcpClient(self.h,)
+                try:
+                    colors = [self.Btn_C1st.text(),self.Btn_C2nd.text(),self.Btn_C3rd.text(),self.Btn_C4th.text()]
+                    self.streaming=Thread(target=self.TCP.streaming,args=(self.h,colors))
+                    self.streaming.start()
+                except:
+                    print ('video error')
+                try:
+                    self.recv=Thread(target=self.recvmassage)
+                    self.recv.start()
+                except:
+                    print ('recv error')
+                self.Btn_Connect.setText( "Disconnect")
+                print ('Server address:'+str(self.h)+'\n')
+            else:
+                print("ERROR: No two positions can be the same color, and you have to apply a color to each one; cannot connect until satisfied")
         elif self.Btn_Connect.text()=="Disconnect":
             self.Btn_Connect.setText( "Connect")
             try:
@@ -533,6 +557,86 @@ class mywindow(QMainWindow,Ui_Client):
             except:
                 pass
             self.TCP.StopTcpcClient()
+    
+
+    # ----- Experimental UI Functionality ----- #
+    def on_btn_C(self,color,pos):
+        # C = 'Btn_C***'
+        # color = 'none', 'red', 'green', 'blue', 'yellow'
+        # pos = 1, 2, 3, 4 (based on button) 
+        if color.text() == 'none':
+            color.setText('red')
+        elif color.text() == 'red':
+            color.setText('green')
+        elif color.text() == 'green':
+            color.setText('blue')
+        elif color.text() == 'blue':
+            color.setText('yellow')
+        elif color.text() == 'yellow':
+            color.setText('none')
+        
+        print(f"Color {pos} has been set to {color.text()}\n")
+
+    """def on_btn_C1st(self):
+        if self.Btn_C1st.text() == "none":
+            self.C1st = 'red'
+        elif self.Btn_C1st.text() == "red":
+            self.C1st = 'green'
+        elif self.Btn_C1st.text() == "green":
+            self.C1st = 'blue'
+        elif self.Btn_C1st.text() == "blue":
+            self.C1st = 'yellow'
+        elif self.Btn_C1st.text() == "yellow":
+            self.C1st = 'none'
+        
+        self.Btn_C1st.setText(f"{self.C1st}")
+        print(f"1st color has been set to {self.C1st}\n")
+
+    def on_btn_C2nd(self):
+        if self.Btn_C2nd.text() == "none":
+            self.C2nd = 'red'
+        elif self.Btn_C2nd.text() == "red":
+            self.C2nd = 'green'
+        elif self.Btn_C2nd.text() == "green":
+            self.C2nd = 'blue'
+        elif self.Btn_C2nd.text() == "blue":
+            self.C2nd = 'yellow'
+        elif self.Btn_C2nd.text() == "yellow":
+            self.C2nd = 'none'
+        
+        self.Btn_C2nd.setText(f"{self.C2nd}")
+        print(f"2nd color has been set to {self.C2nd}\n")
+    
+    def on_btn_C3rd(self):
+        if self.Btn_C3rd.text() == "none":
+            self.C3rd = 'red'
+        elif self.Btn_C3rd.text() == "red":
+            self.C3rd = 'green'
+        elif self.Btn_C3rd.text() == "green":
+            self.C3rd = 'blue'
+        elif self.Btn_C3rd.text() == "blue":
+            self.C3rd = 'yellow'
+        elif self.Btn_C3rd.text() == "yellow":
+            self.C3rd = 'none'
+        
+        self.Btn_C3rd.setText(f"{self.C3rd}")
+        print(f"3rd color has been set to {self.C3rd}\n")
+    
+    def on_btn_C4th(self):
+        if self.Btn_C4th.text() == "none":
+            self.C4th = 'red'
+        elif self.Btn_C4th.text() == "red":
+            self.C4th = 'green'
+        elif self.Btn_C4th.text() == "green":
+            self.C4th = 'blue'
+        elif self.Btn_C4th.text() == "blue":
+            self.C4th = 'yellow'
+        elif self.Btn_C4th.text() == "yellow":
+            self.C4th = 'none'
+        
+        self.Btn_C4th.setText(f"{self.C4th}")
+        print(f"4th color has been set to {self.C4th}\n")"""
+    # ----- Experimental UI Functionality ----- #
 
 
     def close(self):
@@ -604,15 +708,15 @@ class mywindow(QMainWindow,Ui_Client):
             pass
         return bValid
 
-    def Tracking_Ball(self):
-        if self.Btn_Tracking_Balls.text()=="Tracing-On":
-            self.Btn_Tracking_Balls.setText("Tracing-Off")
+    def Tracking_Object(self):
+        if self.Btn_Tracking_Objects.text()=="Tracing-On":
+            self.Btn_Tracking_Objects.setText("Tracing-Off")
         else:
-            self.Btn_Tracking_Balls.setText("Tracing-On")
-    def find_Ball(self,ball_x,ball_y):
-        if ball_x!=0 and ball_y!=0:
-            offset_x=float(ball_x/400-0.5)*2
-            offset_y=float(ball_y/300-0.5)*2
+            self.Btn_Tracking_Objects.setText("Tracing-On")
+    def find_Object(self,object_x,object_y):
+        if object_x!=0 and object_y!=0:
+            offset_x=float(object_x/400-0.5)*2
+            offset_y=float(object_y/300-0.5)*2
             delta_degree_x = 4* offset_x
             delta_degree_y = -4 * offset_y
             self.servo1=self.servo1+delta_degree_x
@@ -627,8 +731,8 @@ class mywindow(QMainWindow,Ui_Client):
         try:
             if  self.is_valid_jpg('video.jpg'):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
-                if self.Btn_Tracking_Balls.text()=="Tracing-Off":
-                        self.find_Ball(self.TCP.ball_x,self.TCP.ball_y)
+                if self.Btn_Tracking_Objects.text()=="Tracing-Off":
+                        self.find_Object(self.TCP.object_x,self.TCP.object_y)
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
