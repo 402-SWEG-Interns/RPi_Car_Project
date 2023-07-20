@@ -53,7 +53,10 @@ class mywindow(QMainWindow,Ui_Client):
         self.label_Servo2.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
         
         
+        
         self.done_scan = False
+        
+        self.TargetLocated = ''
         
         self.label_FineServo1.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
         self.label_FineServo2.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
@@ -471,6 +474,7 @@ class mywindow(QMainWindow,Ui_Client):
     def on_btn_Mode(self,Mode):
         if Mode.text() == "M-Free":
             if Mode.isChecked() == True:
+                # stop_thread(self.start_sequence_tracking)
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Light":
             if Mode.isChecked() == True:
@@ -635,37 +639,66 @@ class mywindow(QMainWindow,Ui_Client):
                 self.label_Video.setPixmap(QPixmap('video.jpg'))
                 if self.Btn_Tracking_Faces.text()=="Tracing-Off":
                     # self.find_Face(self.TCP.face_x,self.TCP.face_y)
-                    self.colorDetect()
+                    self.colorDetect() 
+                    # self.Sequence_Searching()
         except Exception as e:
             print(e)
         self.TCP.video_Flag=True
         
-    def Sequence_searching(self):   #Searches for the Ball
-        sequence = self.c.split(",")
-        for x in sequence:
-            self.TCP.color = x
-            print(x)
-            if self.done_scan == False:
-                self.SequenceLocking()
-                time.sleep(1.5)
-            # else:
-            #     print("Target not sighted")
-            
     
-    def SequenceLocking(self):      #Targeting System, Locks on the target
+               
+    def Sequence_searching(self):   #Searches for the Ball Algorithm
+        sequence = self.c.split(",")
+        while self.TargetLocated == False:
+            for x in sequence:
+                self.TCP.color = x
+                print(x)
+                print("Ball is located at :", "X = ", self.TCP.xball)
+                self.CarMoving()
+                time.sleep(3)
+                if self.done_scan == False:
+                    self.SequenceScanning()          
+    
+    def SequenceScanning(self):      #Targeting System, moves the car towards the target
         if self.TCP.TargetFound == True:
-            print("Target located")
-            self.done_scan == True
+            print("Target Found")
             return
         else:
-            print("Target not sighted")
+            print("Target not sighted")     
+    
+    def CarMoving(self):
+        self.on_btn_Home()
+        sequence = self.c.split(",")
+        x = self.TCP.xball    
+
+        if x >= 0 and x < 195:
+            self.TargetLocated = 'Right'
+        elif x > 205:
+            self.TargetLocated = 'Left'
+        elif (195 < x < 205):
+            self.TargetLocated = 'Center'
             
-               
+        if self.TargetLocated == 'Right':
+            self.on_btn_Turn_Left()
+            print('TUrning Left')
+        elif self.TargetLocated == 'Left':
+            self.on_btn_Turn_Right()
+            print('TUrning Right')
+
+        elif self.TargetLocated == 'Center':
+            self.on_btn_ForWard()
+            print('TUrning Forward')
+            
         
-            
+        
+        
+           
+        
+              
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     myshow=mywindow()
     myshow.show();   
     sys.exit(app.exec_())
+
     
