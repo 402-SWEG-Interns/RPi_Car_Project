@@ -13,6 +13,9 @@ class COMMAND:
     CMD_STOP = "Stop"
     CMD_MODE ="CMD_MODE"
     CMD_SEQ = "CMD_SEQ"
+    CMD_LED_PATH = "CMD_LED_PATH"
+    CMD_INFRA = "CMD_INFRA"
+    CMD_PHASE = "CMD_PHASE"
     def __init__(self):
         pass
         #self.intervalChar

@@ -20,9 +20,9 @@ class VideoStreaming:
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
-        self.ball_x=0
-        self.ball_y=0
-        self.current_color = ""
+        self.ball_x=0.0
+        self.ball_y=0.0
+        self.current_color = "blue"
         self.found_ball=False
 
         self.MODEL_NAME = 'Sample_TFLite_model'
@@ -75,7 +75,7 @@ class VideoStreaming:
             MODEL_NAME = 'Sample_TFLite_model'
             GRAPH_NAME = 'detect.tflite'
             LABELMAP_NAME = 'labelmap.txt'
-            min_conf_threshold = 0.3
+            min_conf_threshold = 0.285
             
             imW, imH = int(400), int(300)
 
@@ -144,17 +144,15 @@ class VideoStreaming:
             max_score = 0
             max_index = 0
 
-            if len(scores) > 0:
-                self.found_ball = True
-            else:
-                self.found_ball = False
 
             # Loop over all detections and draw detection box if confidence is above minimum threshold
             for i in range(len(scores)):
                 # Found desired object with decent confidence
-                if ( (scores[i] > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and (labels[int(classes[i])] == 'sports ball' or labels[int(classes[i])] == 'apple')):
+                if ((scores[i] > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and (labels[int(classes[i])] == 'sports ball' or labels[int(classes[i])] == 'apple')):
                     # Get bounding box coordinates and draw box
                     # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
+                    self.found_ball = True
+                    self.frame_count_noball = 0
                     ymin = int(max(1,(boxes[i][0] * imH)))
                     xmin = int(max(1,(boxes[i][1] * imW)))
                     ymax = int(min(imH,(boxes[i][2] * imH)))
@@ -168,24 +166,39 @@ class VideoStreaming:
                     cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
                     cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
                     cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-                    
+                    ymin = int(max(1,(boxes[i][0] * imH)))
+                    xmin = int(max(1,(boxes[i][1] * imW)))
+                    ymax = int(min(imH,(boxes[i][2] * imH)))
+                    xmax = int(min(imW,(boxes[i][3] * imW)))
+                    self.ball_x = float(xmin+xmax/2)
+                    self.ball_y = float(ymin+ymax/2)
+                    #print(self.ball_x)
+                   
 
                     # Record current max
                     max_score = scores[i]
                     max_index = i
+
+            
+                else:
+            
+                    self.frame_count_noball += 1
+                    if self.frame_count_noball > 30:
+                        self.found_ball = False
 
             if (max_index != 0):
                 ymin = int(max(1,(boxes[max_index][0] * imH)))
                 xmin = int(max(1,(boxes[max_index][1] * imW)))
                 ymax = int(min(imH,(boxes[max_index][2] * imH)))
                 xmax = int(min(imW,(boxes[max_index][3] * imW)))
-                self.face_x = float(xmin+xmax/2)
-                self.face_y = float(ymin+ymax/2)
+                self.ball_x = float(xmin+xmax/2)
+                self.ball_y = float(ymin+ymax/2)
+                #print("[ {} , {} ]".format(self.ball_x,self.ball_y))
 
-            else:
+            """else:
                 Stop = '#0#0#0#0\n'
                 self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
+                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")"""
 
             # Draw framerate in corner of frame
             cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
@@ -261,26 +274,26 @@ class VideoStreaming:
 
         
     def color_detect(self, imageFrame, color):
+        
+        hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
+
+        hsv_dict= {"red": (np.array([111, 45, 35], np.uint8), np.array([180, 255, 255], np.uint8)),
+                    "blue":(np.array([87, 60, 45], np.uint8),np.array([110, 255, 255], np.uint8)),
+                    "green": (np.array([36, 60, 40], np.uint8), np.array([86, 255, 255], np.uint8)), 
+                    "yellow" :(np.array([10, 70, 70], np.uint8), np.array([35, 255, 255], np.uint8))}
         try:
-            hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
-
-            hsv_dict= {"red": (np.array([160, 87, 111], np.uint8), np.array([180, 255, 255], np.uint8)),
-                        "blue":(np.array([87, 130, 125], np.uint8),np.array([110, 255, 255], np.uint8)),
-                        "green": (np.array([40, 190, 75], np.uint8), np.array([86, 255, 255], np.uint8)), 
-                        "yellow" :(np.array([24, 190, 111], np.uint8), np.array([30, 255, 255], np.uint8))}
-            
             limits = hsv_dict[color.lower()]
-            mask = cv2.inRange(hsvFrame, limits[0], limits[1])
-
-            res = cv2.bitwise_and(imageFrame, imageFrame, mask = mask)
-
-            self.face_detect(imageFrame, res)
         except:
-            pass
+            self.found_ball = False
+            cv2.imwrite('video.jpg', imageFrame)
+            return
 
+        mask = cv2.inRange(hsvFrame, limits[0], limits[1])
 
-
-        pass
+        res = cv2.bitwise_and(imageFrame, imageFrame, mask = mask)
+        cv2.imwrite("red_res.jpg", res)
+        self.face_detect(imageFrame, res)
+    
 
             
 
@@ -290,7 +303,7 @@ class VideoStreaming:
             self.client_socket.connect((ip, 8000))
             self.connection = self.client_socket.makefile('rb')
         except:
-            #print "command port connect failed"
+            print("command port connect failed")
             pass
         while True:
             try:
@@ -330,190 +343,3 @@ class VideoStreaming:
 
 if __name__ == '__main__':
     pass
-
-
-    """
-    def color_detect(self, imageFrame):
-        if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
-            # Reading the video from the
-            # webcam in image frames
-           # _, imageFrame = webcam.read()
-        
-            # Convert the imageFrame in 
-            # BGR(RGB color space) to 
-            # HSV(hue-saturation-value)
-            # color space
-            hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
-        
-            # Set range for red color and 
-            # define mask
-            red_lower = np.array([160, 87, 111], np.uint8)
-            red_upper = np.array([180, 255, 255], np.uint8)
-            red_mask = cv2.inRange(hsvFrame, red_lower, red_upper)
-        
-            # Set range for green color and 
-            # define mas
-            green_lower = np.array([40, 190, 75], np.uint8)
-            green_upper = np.array([86, 255, 255], np.uint8)
-            green_mask = cv2.inRange(hsvFrame, green_lower, green_upper)
-        
-            # Set range for blue color and
-            # define mask
-            blue_lower = np.array([87, 130, 125], np.uint8)
-            blue_upper = np.array([110, 255, 255], np.uint8)
-            blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
-
-            yellow_lower = np.array([24, 190, 111], np.uint8)
-            yellow_upper = np.array([30, 255, 255], np.uint8)
-            yellow_mask = cv2.inRange(hsvFrame, yellow_lower, yellow_upper)
-            
-            # Morphological Transform, Dilation
-            # for each color and bitwise_and operator
-            # between imageFrame and mask determines
-            # to detect only that particular color
-            kernel = np.ones((5, 5), "uint8")
-            
-            # For red color
-            red_mask = cv2.dilate(red_mask, kernel)
-            res_red = cv2.bitwise_and(imageFrame, imageFrame, 
-                                    mask = red_mask)
-            
-            
-            # For green color
-            green_mask = cv2.dilate(green_mask, kernel)
-            res_green = cv2.bitwise_and(imageFrame, imageFrame,
-                                        mask = green_mask)
-            
-            # For blue color
-            blue_mask = cv2.dilate(blue_mask, kernel)
-            res_blue = cv2.bitwise_and(imageFrame, imageFrame,
-                                    mask = blue_mask)
-            
-            yellow_mask = cv2.dilate(yellow_mask, kernel)
-            res_yellow = cv2.bitwise_and(imageFrame, imageFrame,
-                                    mask = yellow_mask)
-
-            self.face_detect(imageFrame,res_red)
-            self.face_detect(imageFrame,res_blue)
-            self.face_detect(imageFrame,res_green)
-           # self.face_detect(imageFrame,res_yellow)
-            
-            #previous_colors = self.colors_detected
-            #found_color = []
-            
-    
-            # Creating contour to track red color
-            contours, hierarchy = cv2.findContours(red_mask,
-                                                cv2.RETR_TREE,
-                                                cv2.CHAIN_APPROX_SIMPLE)
-
-            found_color = []
-
-           
-            size = 300
-            for pic, contour in enumerate(contours):
-                area = cv2.contourArea(contour)
-                if(area > 300):
-                    found_color.append('red')
-                    if 'red' not in self.colors_detected:
-                        self.colors_detected.append('red')
-                        self.last_color = 'red'
-                        return
-                    x, y, w, h = cv2.boundingRect(contour)
-                    imageFrame = cv2.rectangle(imageFrame, (x, y), 
-                                            (x + w, y + h), 
-                                            (0, 0, 255), 2)
-                    
-                    cv2.putText(imageFrame, "Red Color", (x, y),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1.0,
-                                (0, 0, 255))    
-            
-                    
-        
-
-            
-            
-            # Creating contour to track green color
-            contours, hierarchy = cv2.findContours(green_mask,
-                                                cv2.RETR_TREE,
-                                                cv2.CHAIN_APPROX_SIMPLE)
-            
-            for pic, contour in enumerate(contours):
-                area = cv2.contourArea(contour)
-                if(area > 300):
-                    found_color.append('green')
-                    if 'green' not in self.colors_detected:
-                        self.colors_detected.append('green')
-                        self.last_color = 'green'
-                        return
-                    x, y, w, h = cv2.boundingRect(contour)
-                    imageFrame = cv2.rectangle(imageFrame, (x, y), 
-                                            (x + w, y + h),
-                                            (0, 255, 0), 2)
-                    
-                    cv2.putText(imageFrame, "Green Color", (x, y),
-                                cv2.FONT_HERSHEY_SIMPLEX, 
-                                1.0, (0, 255, 0))
-        
-                                     
-            # Creating contour to track blue color
-            contours, hierarchy = cv2.findContours(blue_mask,
-                                                cv2.RETR_TREE,
-                                                cv2.CHAIN_APPROX_SIMPLE)
-         
-            for pic, contour in enumerate(contours):
-                area = cv2.contourArea(contour)
-                if(area > 300):
-                    found_color.append('blue')
-                    if 'blue' not in self.colors_detected:                     
-                        self.colors_detected.append('blue')
-                        self.last_color = 'blue'
-                        return
-                    x, y, w, h = cv2.boundingRect(contour)
-                    imageFrame = cv2.rectangle(imageFrame, (x, y),
-                                            (x + w, y + h),
-                                            (255, 0, 0), 2)
-                    
-                    cv2.putText(imageFrame, "Blue Color", (x, y),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                1.0, (255, 0, 0))
-                    
-            # Creating contour to track yellow color
-            contours, hierarchy = cv2.findContours(yellow_mask,
-                                                cv2.RETR_TREE,
-                                                cv2.CHAIN_APPROX_SIMPLE)
-
-                    
-            for pic, contour in enumerate(contours):
-                area = cv2.contourArea(contour)
-                if(area > 300):
-                    found_color.append('yellow')
-                    if 'yellow' not in self.colors_detected:
-                        self.colors_detected.append('yellow')
-                        self.last_color = 'yellow'
-                        return
-                    
-                    x, y, w, h = cv2.boundingRect(contour)
-                    imageFrame = cv2.rectangle(imageFrame, (x, y), 
-                                            (x + w, y + h), 
-                                            (255, 255, 0), 2)
-                    
-                    cv2.putText(imageFrame, "Yellow Color", (x, y),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1.0,
-                                (0, 0, 255))    
-            
-            
-            for color in self.colors_detected:
-                if color not in found_color:
-                    self.colors_detected.remove(color)
-
-            cv2.imshow("red_mask", red_mask)
-            cv2.imshow("yellow_mask", yellow_mask)
-            cv2.imshow("greem_mask", green_mask)
-            cv2.imshow("blue_mask", blue_mask)
-            cv2.imshow("yellow_mask", yellow_mask)
-            cv2.imshow("webcam", imageFrame)
-            #self.colors_detected
-            #print(self.colors_detected)
-            #cv2.imwrite('video.jpg',imageFrame)
-            #cv2.waitKey(1) """
