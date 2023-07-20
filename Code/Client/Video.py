@@ -612,7 +612,7 @@ class VideoStreaming:
         cv2.imwrite('yellow.jpg',res_yellow)
         
 
-    def streaming(self,ip):
+    def streaming(self,ip,colors):
         stream_bytes = b' '
         try:
             self.client_socket.connect((ip, 8000))
@@ -628,7 +628,7 @@ class VideoStreaming:
                 if self.IsValidImage4Bytes(jpg):
                             image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                             if self.video_Flag:
-                                self.object_detect(image)
+                                self.object_detect(image,colors)
                                 # self.color_detect(image,self.color)
                                 self.video_Flag=False
             except Exception as e:

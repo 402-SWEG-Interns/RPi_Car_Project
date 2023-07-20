@@ -129,7 +129,7 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Turn_Right.pressed.connect(self.on_btn_Turn_Right)
         self.Btn_Turn_Right.released.connect(self.on_btn_Stop)
 
-        self.Btn_Video.clicked.connect(self.on_btn_video)
+        self.Btn_Video.clicked.connect(self.on_btn_video) # The most important button of them all
 
         self.Btn_Up.clicked.connect(self.on_btn_Up)
         self.Btn_Left.clicked.connect(self.on_btn_Left)
@@ -145,15 +145,10 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Connect.clicked.connect(self.on_btn_Connect)
 
         # ----- Experimental UI Functionality ----- #
-        self.C1st = 'none'
-        self.C2nd = 'none'
-        self.C3rd = 'none'
-        self.C4th = 'none'
-
-        self.Btn_C1st.clicked.connect(lambda:self.on_btn_C(self.Btn_C1st, self.C1st))
-        self.Btn_C2nd.clicked.connect(lambda:self.on_btn_C(self.Btn_C2nd, self.C2nd))
-        self.Btn_C3rd.clicked.connect(lambda:self.on_btn_C(self.Btn_C3rd, self.C3rd))
-        self.Btn_C4th.clicked.connect(lambda:self.on_btn_C(self.Btn_C4th, self.C4th))
+        self.Btn_C1st.clicked.connect(lambda:self.on_btn_C(self.Btn_C1st, 1))
+        self.Btn_C2nd.clicked.connect(lambda:self.on_btn_C(self.Btn_C2nd, 2))
+        self.Btn_C3rd.clicked.connect(lambda:self.on_btn_C(self.Btn_C3rd, 3))
+        self.Btn_C4th.clicked.connect(lambda:self.on_btn_C(self.Btn_C4th, 4))
 
         self.prevMode = self.Btn_Mode1.text()
         # ----- Experimental UX Functionality ----- #
@@ -527,28 +522,32 @@ class mywindow(QMainWindow,Ui_Client):
         if Mode.text() == "M-Arena": # This code is new; this goes to ../Server/server.py
             if Mode.isChecked() == True:
                 #self.timer.stop()
-                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\n")
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\nColor Order: {self.Btn_C1st.text()}, {self.Btn_C2nd.text()}, {self.Btn_C3rd.text()}, {self.Btn_C4th.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'five'+self.endChar)
         
         self.prevMode = Mode.text()
-         
-                                  
+
+
     def on_btn_Connect(self):
         if self.Btn_Connect.text() == "Connect":
-            self.h=self.IP.text()
-            self.TCP.StartTcpClient(self.h,)
-            try:
-                self.streaming=Thread(target=self.TCP.streaming,args=(self.h,))
-                self.streaming.start()
-            except:
-                print ('video error')
-            try:
-                self.recv=Thread(target=self.recvmassage)
-                self.recv.start()
-            except:
-                print ('recv error')
-            self.Btn_Connect.setText( "Disconnect")
-            print ('Server address:'+str(self.h)+'\n')
+            if self.Btn_C1st.text() != self.Btn_C2nd.text() != self.Btn_C3rd.text() != self.Btn_C4th.text() != 'none':
+                self.h=self.IP.text()
+                self.TCP.StartTcpClient(self.h,)
+                try:
+                    colors = [self.Btn_C1st.text(),self.Btn_C2nd.text(),self.Btn_C3rd.text(),self.Btn_C4th.text()]
+                    self.streaming=Thread(target=self.TCP.streaming,args=(self.h,colors))
+                    self.streaming.start()
+                except:
+                    print ('video error')
+                try:
+                    self.recv=Thread(target=self.recvmassage)
+                    self.recv.start()
+                except:
+                    print ('recv error')
+                self.Btn_Connect.setText( "Disconnect")
+                print ('Server address:'+str(self.h)+'\n')
+            else:
+                print("ERROR: No two positions can be the same color, and you have to apply a color to each one; cannot connect until satisfied")
         elif self.Btn_Connect.text()=="Disconnect":
             self.Btn_Connect.setText( "Connect")
             try:
@@ -561,20 +560,37 @@ class mywindow(QMainWindow,Ui_Client):
     
 
     # ----- Experimental UI Functionality ----- #
-    def on_btn_C(self,C,color): # Replace self.Btn_C1st with C parameter, but also find a way to include self.C1st in the parameters
-        if C.text() == "none":
-            color = 'red'
-        elif C.text() == "red":
-            color = 'green'
-        elif C.text() == "green":
-            color = 'blue'
-        elif C.text() == "blue":
-            color = 'yellow'
-        elif C.text() == "yellow":
-            color = 'none'
+    def on_btn_C(self,color,pos):
+        # C = 'Btn_C***'
+        # color = 'none', 'red', 'green', 'blue', 'yellow'
+        # pos = 1, 2, 3, 4 (based on button) 
+        if color.text() == 'none':
+            color.setText('red')
+        elif color.text() == 'red':
+            color.setText('green')
+        elif color.text() == 'green':
+            color.setText('blue')
+        elif color.text() == 'blue':
+            color.setText('yellow')
+        elif color.text() == 'yellow':
+            color.setText('none')
         
-        C.setText(f"{color}")
-        print(f"Color has been set to {color}\n")
+        print(f"Color {pos} has been set to {color.text()}\n")
+
+    """def on_btn_C1st(self):
+        if self.Btn_C1st.text() == "none":
+            self.C1st = 'red'
+        elif self.Btn_C1st.text() == "red":
+            self.C1st = 'green'
+        elif self.Btn_C1st.text() == "green":
+            self.C1st = 'blue'
+        elif self.Btn_C1st.text() == "blue":
+            self.C1st = 'yellow'
+        elif self.Btn_C1st.text() == "yellow":
+            self.C1st = 'none'
+        
+        self.Btn_C1st.setText(f"{self.C1st}")
+        print(f"1st color has been set to {self.C1st}\n")
 
     def on_btn_C2nd(self):
         if self.Btn_C2nd.text() == "none":
@@ -619,7 +635,7 @@ class mywindow(QMainWindow,Ui_Client):
             self.C4th = 'none'
         
         self.Btn_C4th.setText(f"{self.C4th}")
-        print(f"4th color has been set to {self.C4th}\n")
+        print(f"4th color has been set to {self.C4th}\n")"""
     # ----- Experimental UI Functionality ----- #
 
 
