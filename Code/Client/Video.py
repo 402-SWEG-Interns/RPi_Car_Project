@@ -13,7 +13,7 @@ from multiprocessing import Process
 from Command import COMMAND as cmd
 import yolov5
 
-class VideoStreaming:
+class VideoStreaming():
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(r'haarcascade_frontalface_default.xml')
         self.video_Flag=True
@@ -53,9 +53,9 @@ class VideoStreaming:
                 bValid = False
         return bValid
 
-    def object_detect(self,img): # Originally 'face_detect()', but now it is 'object_detect()'
+    def object_detect(self,img''',clr'''): # Originally 'face_detect()', but now it is 'object_detect()'
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
-            hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            """hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
             red_lower = np.array([136, 87, 111], np.uint8)
             red_upper = np.array([180, 255, 255], np.uint8)
@@ -87,10 +87,10 @@ class VideoStreaming:
             yellow_mask = cv2.dilate(yellow_mask, kernel)
             res_yellow = cv2.bitwise_and(img, img, mask = yellow_mask)
         
-            contours, hierarchy = cv2.findContours(red_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contours, hierarchy = cv2.findContours(red_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)"""
 
             MODEL_NAME = 'Sample_TFLite_model'
-            GRAPH_NAME = 'detect.tflite'
+            YOLOV5_GRAPH_NAME = 'model.pt'
             LABELMAP_NAME = 'labelmap.txt'
             min_conf_threshold = 0.3 # Original value: 0.3   New Value: 0.2???
             
@@ -98,9 +98,9 @@ class VideoStreaming:
 
             CWD_PATH = os.getcwd()
 
-            PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
-
             PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
+
+            PATH_TO_YOLOV5_GRAPH = os.path.join(CWD_PATH,MODEL_NAME,YOLOV5_GRAPH_NAME)
 
             frame = img.copy()
 
@@ -113,10 +113,10 @@ class VideoStreaming:
             if labels[0] == '???':
                 del(labels[0])
 
-            interpreter = tf.lite.Interpreter(model_path=PATH_TO_CKPT)
+            """interpreter = tf.lite.Interpreter(model_path=PATH_TO_CKPT)
 
             interpreter.allocate_tensors()
-
+            
             # Get model details
             input_details = interpreter.get_input_details()
             output_details = interpreter.get_output_details()
@@ -135,7 +135,24 @@ class VideoStreaming:
             if ('StatefulPartitionedCall' in outname): # This is a TF2 model
                 boxes_idx, classes_idx, scores_idx = 1, 3, 0
             else: # This is a TF1 model
-                boxes_idx, classes_idx, scores_idx = 0, 1, 2
+                boxes_idx, classes_idx, scores_idx = 0, 1, 2"""
+            
+            # Use yolov5
+            model = yolov5.load(PATH_TO_YOLOV5_GRAPH)
+
+            # Set model parameters
+            model.conf = 0.25  # NMS confidence threshold
+            model.iou = 0.45  # NMS IoU threshold
+            model.agnostic = False  # NMS class-agnostic
+            model.multi_label = True  # NMS multiple labels per box
+            model.max_det = 1000  # Maximum number of detections per image
+
+            results = model(frame)
+            predictions = results.pred[0].cpu()
+            boxes = predictions[:, :4]
+            scores = predictions[:, 4]
+            classes = predictions[:, 5]
+            results.render()
 
             # Initialize frame rate calculation
             frame_rate_calc = 15
@@ -206,18 +223,13 @@ class VideoStreaming:
                 self.sendData(cmd.CMD_MOTOR+Stop)
                 self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")"""
             
-            
-            frame_rgb = cv2.cvtColor(res_red, cv2.COLOR_BGR2RGB)
+            frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            cv2.imwrite('frameRGB.jpg', frame_rgb) #the inverted colors???
-
-            frame_resized = cv2.resize(frame_rgb, (width, height))
-
-            cv2.imwrite('frameResized.jpg', frame_resized) # resized video for some reason?
+            frame_resized = cv2.resize(frame_rgb, (imW, imH))
 
             input_data = np.expand_dims(frame_resized, axis=0)
 
-            # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
+            """# Normalize pixel values if using a floating model (i.e. if model is non-quantized)
             if floating_model:
                 input_data = (np.float32(input_data) - input_mean) / input_std
 
@@ -228,86 +240,14 @@ class VideoStreaming:
             # Retrieve detection results
             boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
             classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
-            scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
+            scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects"""
 
             max_score = 0
             max_index = 0
 
-
-            #sports ball should be 36
-
             # Loop over all detections and draw detection box if confidence is above minimum threshold
             for i in range(len(scores)):
-                # Found desired object with decent confidence
-                if ( (scores[i] > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and ((labels[int(classes[i])] == "sports ball") or labels[int(classes[i])] == "apple" or labels[int(classes[i])] == "bowl")):
-                    # Get bounding box coordinates and draw box
-                    # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-                    ymin = int(max(1,(boxes[i][0] * imH)))
-                    xmin = int(max(1,(boxes[i][1] * imW)))
-                    ymax = int(min(imH,(boxes[i][2] * imH)))
-                    xmax = int(min(imW,(boxes[i][3] * imW)))
-                    
-                    # Draw label
-                    object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-                    label = '%s: %d%%' % ("red ball", int(scores[i]*100)) # Example: 'person: 72%'
-                    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-                    label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
-                    cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-                    cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-
-                    # Record current max
-                    max_score = scores[i]
-                    max_index = i
-
-            if (max_index != 0):
-                ymin = int(max(1,(boxes[max_index][0] * imH)))
-                xmin = int(max(1,(boxes[max_index][1] * imW)))
-                ymax = int(min(imH,(boxes[max_index][2] * imH)))
-                xmax = int(min(imW,(boxes[max_index][3] * imW)))
-                self.object_x = float(xmin+xmax/2)
-                self.object_y = float(ymin+ymax/2)
-
-            else:
-                Stop = '#0#0#0#0\n'
-                self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
-
-
-
-
-
-            frame_rgb = cv2.cvtColor(res_blue, cv2.COLOR_BGR2RGB)
-
-            cv2.imwrite('frameRGB.jpg', frame_rgb) #the inverted colors???
-
-            frame_resized = cv2.resize(frame_rgb, (width, height))
-
-            cv2.imwrite('frameResized.jpg', frame_resized) # resized video for some reason?
-
-            input_data = np.expand_dims(frame_resized, axis=0)
-
-            # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
-            if floating_model:
-                input_data = (np.float32(input_data) - input_mean) / input_std
-
-            # Perform the actual detection by running the model with the image as input
-            interpreter.set_tensor(input_details[0]['index'],input_data)
-            interpreter.invoke()
-
-            # Retrieve detection results
-            boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
-            classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
-            scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
-
-            max_score = 0
-            max_index = 0
-
-
-            #sports ball should be 36
-
-            # Loop over all detections and draw detection box if confidence is above minimum threshold
-            for i in range(len(scores)):
+                curr_score = scores[i].numpy
                 # Found desired object with decent confidence
                 if ( (scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and ((labels[int(classes[i])] == "sports ball") or labels[int(classes[i])] == "apple" or labels[int(classes[i])] == "bowl")):
                     # Get bounding box coordinates and draw box
@@ -316,10 +256,14 @@ class VideoStreaming:
                     xmin = int(max(1,(boxes[i][1] * imW)))
                     ymax = int(min(imH,(boxes[i][2] * imH)))
                     xmax = int(min(imW,(boxes[i][3] * imW)))
+
+                    # Find bounding box center
+                    cx = (xmax + xmin) / 2
+                    cy = (ymax + ymin) / 2
                     
                     # Draw label
                     object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-                    label = '%s: %d%%' % ("blue ball", int(scores[i]*100)) # Example: 'person: 72%'
+                    label = '%s: %d%%' % (object_name, int(curr_score*100)) # Example: 'person: 72%'
                     labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
                     label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
                     cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
@@ -327,10 +271,10 @@ class VideoStreaming:
                     cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
 
                     # Record current max
-                    max_score = scores[i]
+                    max_score = curr_score
                     max_index = i
 
-            if (max_index != 0):
+            """if (max_index != 0):
                 ymin = int(max(1,(boxes[max_index][0] * imH)))
                 xmin = int(max(1,(boxes[max_index][1] * imW)))
                 ymax = int(min(imH,(boxes[max_index][2] * imH)))
@@ -341,147 +285,7 @@ class VideoStreaming:
             else:
                 Stop = '#0#0#0#0\n'
                 self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
-
-
-
-
-
-            frame_rgb = cv2.cvtColor(res_green, cv2.COLOR_BGR2RGB)
-
-            cv2.imwrite('frameRGB.jpg', frame_rgb) #the inverted colors???
-
-            frame_resized = cv2.resize(frame_rgb, (width, height))
-
-            cv2.imwrite('frameResized.jpg', frame_resized) # resized video for some reason?
-            
-            input_data = np.expand_dims(frame_resized, axis=0)
-
-            # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
-            if floating_model:
-                input_data = (np.float32(input_data) - input_mean) / input_std
-
-            # Perform the actual detection by running the model with the image as input
-            interpreter.set_tensor(input_details[0]['index'],input_data)
-            interpreter.invoke()
-
-            # Retrieve detection results
-            boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
-            classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
-            scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
-
-            max_score = 0
-            max_index = 0
-
-
-            #sports ball should be 36
-
-            # Loop over all detections and draw detection box if confidence is above minimum threshold
-            for i in range(len(scores)):
-                # Found desired object with decent confidence
-                if ( (scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and ((labels[int(classes[i])] == "sports ball") or labels[int(classes[i])] == "apple" or labels[int(classes[i])] == "bowl")):
-                    # Get bounding box coordinates and draw box
-                    # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-                    ymin = int(max(1,(boxes[i][0] * imH)))
-                    xmin = int(max(1,(boxes[i][1] * imW)))
-                    ymax = int(min(imH,(boxes[i][2] * imH)))
-                    xmax = int(min(imW,(boxes[i][3] * imW)))
-                    
-                    # Draw label
-                    object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-                    label = '%s: %d%%' % ("green ball", int(scores[i]*100)) # Example: 'person: 72%'
-                    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-                    label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
-                    cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-                    cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-
-                    # Record current max
-                    max_score = scores[i]
-                    max_index = i
-
-            if (max_index != 0):
-                ymin = int(max(1,(boxes[max_index][0] * imH)))
-                xmin = int(max(1,(boxes[max_index][1] * imW)))
-                ymax = int(min(imH,(boxes[max_index][2] * imH)))
-                xmax = int(min(imW,(boxes[max_index][3] * imW)))
-                self.object_x = float(xmin+xmax/2)
-                self.object_y = float(ymin+ymax/2)
-
-            else:
-                Stop = '#0#0#0#0\n'
-                self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
-
-
-
-
-
-            frame_rgb = cv2.cvtColor(res_yellow, cv2.COLOR_BGR2RGB)
-
-            cv2.imwrite('frameRGB.jpg', frame_rgb) #the inverted colors???
-
-            frame_resized = cv2.resize(frame_rgb, (width, height))
-
-            cv2.imwrite('frameResized.jpg', frame_resized) # resized video for some reason?
-
-            input_data = np.expand_dims(frame_resized, axis=0)
-
-            # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
-            if floating_model:
-                input_data = (np.float32(input_data) - input_mean) / input_std
-
-            # Perform the actual detection by running the model with the image as input
-            interpreter.set_tensor(input_details[0]['index'],input_data)
-            interpreter.invoke()
-
-            # Retrieve detection results
-            boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
-            classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
-            scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
-
-            max_score = 0
-            max_index = 0
-
-
-            #sports ball should be 36
-
-            # Loop over all detections and draw detection box if confidence is above minimum threshold
-            for i in range(len(scores)):
-                # Found desired object with decent confidence
-                if ( (scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and ((labels[int(classes[i])] == "sports ball") or labels[int(classes[i])] == "apple" or labels[int(classes[i])] == "bowl")):
-                    # Get bounding box coordinates and draw box
-                    # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-                    ymin = int(max(1,(boxes[i][0] * imH)))
-                    xmin = int(max(1,(boxes[i][1] * imW)))
-                    ymax = int(min(imH,(boxes[i][2] * imH)))
-                    xmax = int(min(imW,(boxes[i][3] * imW)))
-                    
-                    # Draw label
-                    object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-                    label = '%s: %d%%' % ("yellow ball", int(scores[i]*100)) # Example: 'person: 72%'
-                    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-                    label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
-                    cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-                    cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-
-                    # Record current max
-                    max_score = scores[i]
-                    max_index = i
-
-            if (max_index != 0):
-                ymin = int(max(1,(boxes[max_index][0] * imH)))
-                xmin = int(max(1,(boxes[max_index][1] * imW)))
-                ymax = int(min(imH,(boxes[max_index][2] * imH)))
-                xmax = int(min(imW,(boxes[max_index][3] * imW)))
-                self.object_x = float(xmin+xmax/2)
-                self.object_y = float(ymin+ymax/2)
-
-            else:
-                Stop = '#0#0#0#0\n'
-                self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
+                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")"""
 
             # Draw framerate in corner of frame
             cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
@@ -510,7 +314,7 @@ class VideoStreaming:
             pass"""
 
         
-        # Convert the img in 
+        """# Convert the img in 
         # BGR(RGB color space) to
         # HSV(hue-saturation-value)
         # color space
@@ -610,8 +414,7 @@ class VideoStreaming:
         cv2.imwrite('red.jpg',res_red)
         cv2.imwrite('green.jpg',res_green)
         cv2.imwrite('blue.jpg',res_blue)
-        cv2.imwrite('yellow.jpg',res_yellow)
-        
+        cv2.imwrite('yellow.jpg',res_yellow)"""
 
     def streaming(self,ip,colors):
         stream_bytes = b' '
@@ -627,11 +430,11 @@ class VideoStreaming:
                 leng=struct.unpack('<L', stream_bytes[:4])
                 jpg=self.connection.read(leng[0])
                 if self.IsValidImage4Bytes(jpg):
-                            image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-                            if self.video_Flag:
-                                self.object_detect(image,colors)
-                                # self.color_detect(image,self.color)
-                                self.video_Flag=False
+                    image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                    if self.video_Flag:
+                        self.object_detect(image,colors)
+                        # self.color_detect(image,self.color)
+                        self.video_Flag=False
             except Exception as e:
                 print (e)
                 break
