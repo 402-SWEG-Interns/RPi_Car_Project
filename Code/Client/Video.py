@@ -53,7 +53,7 @@ class VideoStreaming():
                 bValid = False
         return bValid
 
-    def object_detect(self,img''',clr'''): # Originally 'face_detect()', but now it is 'object_detect()'
+    def object_detect(self,img,clr): # Originally 'face_detect()', but now it is 'object_detect()'
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
             """hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
