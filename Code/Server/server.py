@@ -8,7 +8,7 @@ import picamera
 import numpy as np
 from threading import Condition
 import fcntl
-import  sys
+import sys
 import threading
 from Motor import *
 from servo import *
@@ -25,6 +25,7 @@ from Command import COMMAND as cmd
 from linepath import * 
 from colorchange import *
 from search import *
+from search_destroy import *
 
 
 class StreamingOutput(io.BufferedIOBase):
@@ -48,7 +49,6 @@ class Server:
         self.adc=Adc()
         self.light=Light()
         self.infrared=Line_Tracking()
-        self.search = Search()
         self.changecolor = colorchange()
         self.tcp_Flag = True
         self.sonic=False
@@ -57,6 +57,10 @@ class Server:
         self.endChar='\n'
         self.intervalChar='#'
         self.sequence = []
+        self.lookEdge = False
+        #self.ball_x = -1
+        #self.found_Ball = False
+        self.searchdestroy = SearchDestroy()
 
     def get_interface_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -135,22 +139,24 @@ class Server:
             stop_thread(self.infraredRun)
             self.PWM.setMotorModel(0,0,0,0)
         except:
+            self.PWM.setMotorModel(0,0,0,0)
             pass
+
         try:
-            stop_thread(self.lightRun)
+            #stop_thread(self.search.run)
             self.PWM.setMotorModel(0,0,0,0)
-        except:
-            pass            
-        try:
-            stop_thread(self.search.Run)
-            self.PWM.setMotorModel(0,0,0,0)
-            self.servo.setServoPwm('0',80)
+            self.servo.setServoPwm('0',72)
             self.servo.setServoPwm('1',100)
             for i in range(self.led.strip.numPixels()):
                 self.led.strip.setPixelColor(i, Color(0, 0, 0))
                 self.led.strip.show()
         except:
             pass
+        try:
+            stop_thread(self.lightRun)
+            self.PWM.setMotorModel(0,0,0,0)
+        except:
+            pass            
         
     def readdata(self):
         try:
@@ -168,7 +174,7 @@ class Server:
                     if self.tcp_Flag:
                         self.Reset()
                     break
-                print(AllData)
+                #print(AllData)
                 if len(AllData) < 5:
                     restCmd=AllData
                     if restCmd=='' and self.tcp_Flag:
@@ -198,8 +204,8 @@ class Server:
                         elif data[1]=='two' or data[1]=="3":
                             self.stopMode()
                             self.Mode='two'
-                            self.search = threading.Thread(target=self.search.run, args=self.sequence)
-                            self.search.start() 
+                            self.searchdestroyRun=threading.Thread(target=self.searchdestroy.run)
+                            self.searchdestroyRun.start()
 
                         elif data[1]=='three' or data[1]=="4":
                             self.stopMode()
@@ -211,8 +217,34 @@ class Server:
                             self.Mode='four'
                             self.infraredRun=threading.Thread(target=self.infrared.run)
                             self.infraredRun.start()
-                            
-                    elif (cmd.CMD_MOTOR in data) and self.Mode=='one':
+                    elif cmd.CMD_SD in data:
+                        
+                        if float(data[1]) >= 0:
+                            self.searchdestroy.object_x = float(data[1])
+                            self.searchdestroy.found_object = True
+                            self.searchdestroy.object_conf = float(data[2])
+                        else:
+                            self.searchdestroy.object_x = -1
+                            self.searchdestroy.found_object = False
+                            self.searchdestroy.object_conf = -1
+
+                    elif cmd.CMD_PHASE in data:
+                        if data[1] == 'end':
+                            try:
+                                #print("ending edge")
+                                stop_thread(self.infraTimer)
+                                self.lookEdge = False
+                            except:
+                                pass    
+                        elif data[1] == 'start':
+                            print("starting edge")
+                            self.lookEdge = True
+                            print(self.lookEdge)
+                            self.infraTimer = threading.Timer(0.15,self.sendEdge)
+                            self.infraTimer.start()
+
+
+                    elif cmd.CMD_MOTOR in data:
                         try:
                             data1=int(data[1])
                             data2=int(data[2])
@@ -257,20 +289,20 @@ class Server:
 
                     elif cmd.CMD_LED_PATH in data:
                         self.LedPath = data[1]
-                        if self.LedPath == '0':
+                        if self.LedPath == 'red':
                             for i in range(self.led.strip.numPixels()):
                                 self.led.strip.setPixelColor(i, Color(255, 0, 0))
                                 self.led.strip.show()
         
-                        elif self.LedPath == '1':
+                        elif self.LedPath == 'blue':
                             for i in range(self.led.strip.numPixels()):
                                 self.led.strip.setPixelColor(i, Color(0, 0, 255))
                                 self.led.strip.show()
-                        elif self.LedPath == '2':
+                        elif self.LedPath == 'yellow':
                             for i in range(self.led.strip.numPixels()):
                                 self.led.strip.setPixelColor(i, Color(255, 255, 0))
                                 self.led.strip.show()
-                        elif self.LedPath == '3':
+                        elif self.LedPath == 'green':
                             for i in range(self.led.strip.numPixels()):
                                 self.led.strip.setPixelColor(i, Color(0, 255, 0))
                                 self.led.strip.show()
@@ -307,6 +339,10 @@ class Server:
         except Exception as e: 
             print(e)
         self.StopTcpServer()    
+
+    def sendConfirm(self):
+        if self.searchdestroy.object_confirmed == True:
+            self.send(cmd.CMD_SD+"#"+"found"+'\n')
     def sendUltrasonic(self):
         if self.sonic==True:
             ADC_Ultrasonic=self.ultrasonic.get_distance()
@@ -317,6 +353,19 @@ class Server:
                     self.sonic=False
             self.ultrasonicTimer = threading.Timer(0.13,self.sendUltrasonic)
             self.ultrasonicTimer.start()
+    
+    def sendEdge(self):
+        if self.lookEdge == True:
+            ADC_INFRA = self.infrared.readSensor()
+            if ADC_INFRA == 7 or ADC_INFRA == 3 or ADC_INFRA == 6:
+                self.send(cmd.CMD_INFRA+'#'+'1'+'\n')
+                self.PWM.setMotorModel(0,0,0,0)
+            else:
+                self.send(cmd.CMD_INFRA+'#'+'0'+'\n')
+                
+            self.infraTimer = threading.Timer(0.1, self.sendEdge)
+            self.infraTimer.start()
+
     def sendLight(self):
         if self.Light==True:
             ADC_Light1=self.adc.recvADC(0)

@@ -31,8 +31,17 @@ class Line_Tracking:
             elif self.LMR==3:
                 PWM.setMotorModel(4000,4000,-2000,-2000)
             elif self.LMR==7:
-                #pass
                 PWM.setMotorModel(0,0,0,0)
+    def readSensor(self):
+        self.LMR=0x00
+        if GPIO.input(self.IR01)==True:
+            self.LMR=(self.LMR | 4)
+        if GPIO.input(self.IR02)==True:
+            self.LMR=(self.LMR | 2)
+        if GPIO.input(self.IR03)==True:
+            self.LMR=(self.LMR | 1)
+        
+        return self.LMR
             
 infrared=Line_Tracking()
 # Main program logic follows:

@@ -10,5 +10,8 @@ class COMMAND:
     CMD_MODE ="CMD_MODE"
     CMD_LED_PATH ="CMD_LED_PATH"
     CMD_SEQ = "CMD_SEQ"
+    CMD_INFRA = "CMD_INFRA"
+    CMD_PHASE = "CMD_PHASE"
+    CMD_SD = "CMD_SD"
     def __init__(self):
         pass

@@ -6,6 +6,7 @@ import socket
 import io
 import sys
 import struct
+import yolov5
 import tensorflow as tf
 import os
 from PIL import Image
@@ -23,6 +24,28 @@ class VideoStreaming:
         self.ball_y=0
         self.current_color = ""
         self.found_ball=False
+
+        self.MODEL_NAME = 'Sample_TFLite_model'
+        self.LABELMAP_NAME = 'labelmap.txt'
+        self.YOLOV5_GRAPH_NAME = 'best.pt'
+
+        self.min_conf_threshold = 0.2
+        self.imW, self.imH = int(400), int(300)
+
+        self.CWD_PATH = os.getcwd()
+
+        self.PATH_TO_LABELS = os.path.join(self.CWD_PATH,self.MODEL_NAME,self.LABELMAP_NAME)
+
+        self.PATH_TO_YOLOV5_GRAPH = os.path.join(self.CWD_PATH,self.MODEL_NAME,self.YOLOV5_GRAPH_NAME)
+
+        self.model.conf = 0.25  # NMS confidence threshold
+        self.model.iou = 0.45  # NMS IoU threshold
+        self.model.agnostic = False  # NMS class-agnostic
+        self.model.multi_label = True # NMS multiple labels per box
+        self.model.max_det = 1000  # maximum number of detections per image
+
+        self.model = yolov5.load(self.PATH_TO_YOLOV5_GRAPH)
+
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -169,7 +192,74 @@ class VideoStreaming:
         
         cv2.imwrite('video.jpg', frame)
 
-    
+
+        def find_bottle(self,img):
+            if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
+
+                frame = img.copy()
+                with open(PATH_TO_LABELS, 'r') as f:
+                    labels = [line.strip() for line in f.readlines()]
+
+                # Have to do a weird fix for label map if using the COCO "starter model" from
+                # https://www.tensorflow.org/lite/models/object_detection/overview
+                # First label is '???', which has to be removed.
+                if labels[0] == '???':
+                    del(labels[0])
+
+                results = self.model(frame) 
+                predictions = results.pred[0].cpu()
+                boxes = predictions[:, :4]
+                scores = predictions[:, 4]
+                classes = predictions[:, 5]
+                results.render() 
+
+                # Initialize frame rate calculation
+                frame_rate_calc = 30
+
+                frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+                frame_resized = cv2.resize(frame_rgb, (imW, imH))
+                input_data = np.expand_dims(frame_resized, axis=0)
+
+                max_score = 0
+                max_index = 0
+
+                # Loop over all detections and draw detection box if confidence is above minimum threshold
+                for i in range(len(scores)):
+                    curr_score = scores[i].numpy()
+                    # Found desired object with decent confidence
+                    if ( (scores[i] > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
+                        # Get bounding box coordinates and draw box
+                        # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
+                        ymin = int(max(1,(boxes[i][0] * imH)))
+                        xmin = int(max(1,(boxes[i][1] * imW)))
+                        ymax = int(min(imH,(boxes[i][2] * imH)))
+                        xmax = int(min(imW,(boxes[i][3] * imW)))
+
+                        #find bounding box center
+                        cx = (xmax + xmin)/ 2 
+                        cy = (ymax + ymin)/ 2 
+
+                        # Draw label
+                        object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
+                        label = '%s: %d%%' % (object_name, int(curr_score*100)) # Example: 'person: 72%'
+                        labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
+                        label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
+                        cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+                        cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
+                        cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
+
+                        # Record current max
+                        max_score = curr_score 
+                        max_index = i
+
+                # Draw framerate in corner of frame
+                cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+
+            cv2.imwrite('video.jpg', frame)
+
+
+        
     def color_detect(self, imageFrame, color):
         try:
             hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
@@ -211,7 +301,7 @@ class VideoStreaming:
                             image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                             if self.video_Flag:
                                 #self.face_detect(image)
-                                self.color_detect(image, self.current_color)
+                                self.find_bottle(image)
                                 self.video_Flag=False
             except Exception as e:
                 print (e)

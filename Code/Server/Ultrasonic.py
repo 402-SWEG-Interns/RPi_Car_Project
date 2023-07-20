@@ -3,6 +3,8 @@ from Motor import *
 import RPi.GPIO as GPIO
 from servo import *
 from PCA9685 import PCA9685
+import Line_Tracking
+
 class Ultrasonic:
     def __init__(self):        
         GPIO.setwarnings(False)        
@@ -10,6 +12,7 @@ class Ultrasonic:
         self.echo_pin = 22
         self.MAX_DISTANCE = 300               # define the maximum measuring distance, unit: cm
         self.timeOut = self.MAX_DISTANCE*60   # calculate timeout according to the maximum measuring distance
+        self.stop = False
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.trigger_pin,GPIO.OUT)
         GPIO.setup(self.echo_pin,GPIO.IN)
@@ -18,11 +21,11 @@ class Ultrasonic:
         t0 = time.time()
         while(GPIO.input(pin) != level):
             if((time.time() - t0) > timeOut*0.000001):
-                return 0;
+                return 0
         t0 = time.time()
         while(GPIO.input(pin) == level):
             if((time.time() - t0) > timeOut*0.000001):
-                return 0;
+                return 0
         pulseTime = (time.time() - t0)*1000000
         return pulseTime
     
@@ -63,37 +66,60 @@ class Ultrasonic:
     def run(self):
         self.PWM=Motor()
         self.pwm_S=Servo()
-        for i in range(30,151,60):
-                self.pwm_S.setServoPwm('0',i)
-                time.sleep(0.2)
-                if i==30:
-                    L = self.get_distance()
-                elif i==90:
-                    M = self.get_distance()
-                else:
-                    R = self.get_distance()
-        while True:
-            for i in range(90,30,-60):
-                self.pwm_S.setServoPwm('0',i)
-                time.sleep(0.2)
-                if i==30:
-                    L = self.get_distance()
-                elif i==90:
-                    M = self.get_distance()
-                else:
-                    R = self.get_distance()
-                self.run_motor(L,M,R)
-            for i in range(30,151,60):
-                self.pwm_S.setServoPwm('0',i)
-                time.sleep(0.2)
-                if i==30:
-                    L = self.get_distance()
-                elif i==90:
-                    M = self.get_distance()
-                else:
-                    R = self.get_distance()
-                self.run_motor(L,M,R)
         
+        for i in range(30,151,10):
+                self.pwm_S.setServoPwm('0',i)
+                time.sleep(0.25)
+                if i==30:
+                    L = self.get_distance()
+                elif i==90:
+                    M = self.get_distance()
+                else:
+                    R = self.get_distance()
+                print(self.stop)
+                if self.stop:
+                    print("FOUND")
+                    self.PWM.setMotorModel(0,0,0,0)
+                    self.stop = False
+                    return 
+        
+        while True:
+            for i in range(90,30,-10):
+                self.pwm_S.setServoPwm('0',i)
+                time.sleep(0.25)
+                if i==30:
+                    L = self.get_distance()
+                elif i==90:
+                    M = self.get_distance()
+                else:
+                    R = self.get_distance()
+                if self.stop:
+                    print("FOUND")
+                    self.PWM.setMotorModel(0,0,0,0)
+                    self.stop = False
+                    return
+                self.run_motor(L,M,R)
+
+            for i in range(30,151,10):
+                self.pwm_S.setServoPwm('0',i)
+                time.sleep(0.25)
+                if i==30:
+                    L = self.get_distance()
+                elif i==90:
+                    M = self.get_distance()
+                else:
+                    R = self.get_distance()
+                if self.stop:
+                    print("FOUND")
+                    self.PWM.setMotorModel(0,0,0,0)
+                    return
+                self.run_motor(L,M,R)
+            if self.stop:
+                print("FOUND")
+                self.PWM.setMotorModel(0,0,0,0)
+                self.stop = False
+                return
+    
             
         
 ultrasonic=Ultrasonic()              
