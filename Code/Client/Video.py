@@ -188,7 +188,7 @@ class VideoStreaming:
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
             MODEL_NAME = 'Sample_TFLite_model'
             LABELMAP_NAME = 'labelmap.txt'
-            YOLOV5_GRAPH_NAME = 'model.pt'
+            YOLOV5_GRAPH_NAME = 'bestModel3.0.pt'
 
             min_conf_threshold = 0.2
             imW, imH = int(400), int(300)
@@ -290,7 +290,8 @@ class VideoStreaming:
                             if self.video_Flag:
                                 # self.ColorDetect(image) ##9483273984329849238379
                                 # self.face_detect(image)
-                                self.color_ball_detect(image, self.current_color)
+                                # self.color_ball_detect(image, self.current_color)
+                                self.find_bottle(image)
                                 # try:
                                 #     self.color_ball_detect(image, self.current_color)
                                 # except:
