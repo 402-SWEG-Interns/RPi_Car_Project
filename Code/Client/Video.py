@@ -53,8 +53,10 @@ class VideoStreaming():
                 bValid = False
         return bValid
 
-    def object_detect(self,img,clr): # Originally 'face_detect()', but now it is 'object_detect()'
+    def object_detect(self,img,obj): # Originally 'face_detect()', but now it is 'object_detect()'
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
+            print(f'Object order is {obj[0]}, {obj[1]}, then {obj[2]}')
+
             """hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
             red_lower = np.array([136, 87, 111], np.uint8)
@@ -416,7 +418,7 @@ class VideoStreaming():
         cv2.imwrite('blue.jpg',res_blue)
         cv2.imwrite('yellow.jpg',res_yellow)"""
 
-    def streaming(self,ip,colors):
+    def streaming(self,ip,objects):
         stream_bytes = b' '
         try:
             self.client_socket.connect((ip, 8000))
@@ -432,7 +434,7 @@ class VideoStreaming():
                 if self.IsValidImage4Bytes(jpg):
                     image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                     if self.video_Flag:
-                        self.object_detect(image,colors)
+                        self.object_detect(image,objects)
                         # self.color_detect(image,self.color)
                         self.video_Flag=False
             except Exception as e:

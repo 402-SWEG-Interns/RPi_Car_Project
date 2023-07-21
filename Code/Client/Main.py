@@ -145,10 +145,10 @@ class mywindow(QMainWindow,Ui_Client):
         self.Btn_Connect.clicked.connect(self.on_btn_Connect)
 
         # ----- Experimental UI Functionality ----- #
-        self.Btn_C1st.clicked.connect(lambda:self.on_btn_C(self.Btn_C1st, 1))
-        self.Btn_C2nd.clicked.connect(lambda:self.on_btn_C(self.Btn_C2nd, 2))
-        self.Btn_C3rd.clicked.connect(lambda:self.on_btn_C(self.Btn_C3rd, 3))
-        self.Btn_C4th.clicked.connect(lambda:self.on_btn_C(self.Btn_C4th, 4))
+        self.Btn_O1st.clicked.connect(lambda:self.on_btn_C(self.Btn_O1st, 1))
+        self.Btn_O2nd.clicked.connect(lambda:self.on_btn_C(self.Btn_O2nd, 2))
+        self.Btn_O3rd.clicked.connect(lambda:self.on_btn_C(self.Btn_O3rd, 3))
+        # self.Btn_O4th.clicked.connect(lambda:self.on_btn_C(self.Btn_O4th, 4))
 
         self.prevMode = self.Btn_Mode1.text()
         # ----- Experimental UX Functionality ----- #
@@ -522,7 +522,7 @@ class mywindow(QMainWindow,Ui_Client):
         if Mode.text() == "M-Arena": # This code is new; this goes to ../Server/server.py
             if Mode.isChecked() == True:
                 #self.timer.stop()
-                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\nColor Order: {self.Btn_C1st.text()}, {self.Btn_C2nd.text()}, {self.Btn_C3rd.text()}, {self.Btn_C4th.text()}\n")
+                print(f"Previous: {self.prevMode}\nSwitched: {Mode.text()}\nObject Order: {self.Btn_O1st.text()}, {self.Btn_O2nd.text()}, {self.Btn_O3rd.text()}\n")
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'five'+self.endChar)
         
         self.prevMode = Mode.text()
@@ -530,12 +530,12 @@ class mywindow(QMainWindow,Ui_Client):
 
     def on_btn_Connect(self):
         if self.Btn_Connect.text() == "Connect":
-            if self.Btn_C1st.text() != self.Btn_C2nd.text() != self.Btn_C3rd.text() != self.Btn_C4th.text() != 'none':
+            if (self.Btn_O1st.text() != 'none' or self.Btn_O2nd.text() != 'none' or self.Btn_O3rd.text() != 'none') and (self.Btn_O1st.text() != self.Btn_O2nd.text() != self.Btn_O3rd.text() != self.Btn_O1st.text()):
                 self.h=self.IP.text()
                 self.TCP.StartTcpClient(self.h,)
                 try:
-                    colors = [self.Btn_C1st.text(),self.Btn_C2nd.text(),self.Btn_C3rd.text(),self.Btn_C4th.text()]
-                    self.streaming=Thread(target=self.TCP.streaming,args=(self.h,colors))
+                    objects = [self.Btn_O1st.text(),self.Btn_O2nd.text(),self.Btn_O3rd.text()]
+                    self.streaming=Thread(target=self.TCP.streaming,args=(self.h,objects))
                     self.streaming.start()
                 except:
                     print ('video error')
@@ -547,7 +547,7 @@ class mywindow(QMainWindow,Ui_Client):
                 self.Btn_Connect.setText( "Disconnect")
                 print ('Server address:'+str(self.h)+'\n')
             else:
-                print("ERROR: No two positions can be the same color, and you have to apply a color to each one; cannot connect until satisfied")
+                print("ERROR: No two positions can be the same object, and you have to apply an object to each one; cannot connect until satisfied")
         elif self.Btn_Connect.text()=="Disconnect":
             self.Btn_Connect.setText( "Connect")
             try:
@@ -560,82 +560,20 @@ class mywindow(QMainWindow,Ui_Client):
     
 
     # ----- Experimental UI Functionality ----- #
-    def on_btn_C(self,color,pos):
-        # C = 'Btn_C***'
-        # color = 'none', 'red', 'green', 'blue', 'yellow'
+    def on_btn_C(self,obj,pos):
+        # C = 'Btn_O***'
+        # object = 'none', 'cassette', 'truck', 'stapler'
         # pos = 1, 2, 3, 4 (based on button) 
-        if color.text() == 'none':
-            color.setText('red')
-        elif color.text() == 'red':
-            color.setText('green')
-        elif color.text() == 'green':
-            color.setText('blue')
-        elif color.text() == 'blue':
-            color.setText('yellow')
-        elif color.text() == 'yellow':
-            color.setText('none')
+        if obj.text() == 'none':
+            obj.setText('cassette')
+        elif obj.text() == 'cassette':
+            obj.setText('truck')
+        elif obj.text() == 'truck':
+            obj.setText('stapler')
+        elif obj.text() == 'stapler':
+            obj.setText('none')
         
-        print(f"Color {pos} has been set to {color.text()}\n")
-
-    """def on_btn_C1st(self):
-        if self.Btn_C1st.text() == "none":
-            self.C1st = 'red'
-        elif self.Btn_C1st.text() == "red":
-            self.C1st = 'green'
-        elif self.Btn_C1st.text() == "green":
-            self.C1st = 'blue'
-        elif self.Btn_C1st.text() == "blue":
-            self.C1st = 'yellow'
-        elif self.Btn_C1st.text() == "yellow":
-            self.C1st = 'none'
-        
-        self.Btn_C1st.setText(f"{self.C1st}")
-        print(f"1st color has been set to {self.C1st}\n")
-
-    def on_btn_C2nd(self):
-        if self.Btn_C2nd.text() == "none":
-            self.C2nd = 'red'
-        elif self.Btn_C2nd.text() == "red":
-            self.C2nd = 'green'
-        elif self.Btn_C2nd.text() == "green":
-            self.C2nd = 'blue'
-        elif self.Btn_C2nd.text() == "blue":
-            self.C2nd = 'yellow'
-        elif self.Btn_C2nd.text() == "yellow":
-            self.C2nd = 'none'
-        
-        self.Btn_C2nd.setText(f"{self.C2nd}")
-        print(f"2nd color has been set to {self.C2nd}\n")
-    
-    def on_btn_C3rd(self):
-        if self.Btn_C3rd.text() == "none":
-            self.C3rd = 'red'
-        elif self.Btn_C3rd.text() == "red":
-            self.C3rd = 'green'
-        elif self.Btn_C3rd.text() == "green":
-            self.C3rd = 'blue'
-        elif self.Btn_C3rd.text() == "blue":
-            self.C3rd = 'yellow'
-        elif self.Btn_C3rd.text() == "yellow":
-            self.C3rd = 'none'
-        
-        self.Btn_C3rd.setText(f"{self.C3rd}")
-        print(f"3rd color has been set to {self.C3rd}\n")
-    
-    def on_btn_C4th(self):
-        if self.Btn_C4th.text() == "none":
-            self.C4th = 'red'
-        elif self.Btn_C4th.text() == "red":
-            self.C4th = 'green'
-        elif self.Btn_C4th.text() == "green":
-            self.C4th = 'blue'
-        elif self.Btn_C4th.text() == "blue":
-            self.C4th = 'yellow'
-        elif self.Btn_C4th.text() == "yellow":
-            self.C4th = 'none'
-        
-        self.Btn_C4th.setText(f"{self.C4th}")
-        print(f"4th color has been set to {self.C4th}\n")"""
+        print(f"Object {pos} has been set to {obj.text()}\n")
     # ----- Experimental UI Functionality ----- #
 
 
