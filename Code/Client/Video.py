@@ -251,7 +251,7 @@ class VideoStreaming():
             for i in range(len(scores)):
                 curr_score = scores[i].numpy
                 # Found desired object with decent confidence
-                if ( (scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and ((labels[int(classes[i])] == "sports ball") or labels[int(classes[i])] == "apple" or labels[int(classes[i])] == "bowl")):
+                if ( (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
                     # Get bounding box coordinates and draw box
                     # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
                     ymin = int(max(1,(boxes[i][0] * imH)))
