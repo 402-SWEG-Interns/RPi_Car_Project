@@ -55,7 +55,6 @@ class VideoStreaming():
 
     def object_detect(self,img,obj): # Originally 'face_detect()', but now it is 'object_detect()'
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
-            print(f'Object order is {obj[0]}, {obj[1]}, then {obj[2]}')
 
             """hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -94,7 +93,7 @@ class VideoStreaming():
             MODEL_NAME = 'Sample_TFLite_model'
             YOLOV5_GRAPH_NAME = 'model.pt'
             LABELMAP_NAME = 'labelmap.txt'
-            min_conf_threshold = 0.3 # Original value: 0.3   New Value: 0.2???
+            min_conf_threshold = 0.2 # Original value: 0.3   New Value: 0.2???
             
             imW, imH = int(400), int(300)
 
@@ -249,7 +248,7 @@ class VideoStreaming():
 
             # Loop over all detections and draw detection box if confidence is above minimum threshold
             for i in range(len(scores)):
-                curr_score = scores[i].numpy
+                curr_score = scores[i].numpy()
                 # Found desired object with decent confidence
                 if ( (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
                     # Get bounding box coordinates and draw box
