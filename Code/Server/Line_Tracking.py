@@ -1,5 +1,6 @@
 import time
 from Motor import *
+import servo
 import RPi.GPIO as GPIO
 class Line_Tracking:
     def __init__(self):
@@ -10,6 +11,42 @@ class Line_Tracking:
         GPIO.setup(self.IR01,GPIO.IN)
         GPIO.setup(self.IR02,GPIO.IN)
         GPIO.setup(self.IR03,GPIO.IN)
+        self.object = 0
+        self.found = -1
+        self.area = 0
+
+
+
+
+    def run2(self):
+        while True:
+            servoL = self.left()
+            servoR = self.right()
+            if servoL != -1 or servoR != -1:
+
+
+    def left(self):
+        for i in range(181, -1,-1):
+            pwm.setServoPwm('0',i)
+            if self.found != -1:
+                return i
+        return -1
+
+    def right(self):
+        for i in range(181):
+            pwm.setServoPwm('0',i)
+            if self.found != -1:
+                return i
+        return -1
+
+
+
+
+
+
+
+
+
     def run(self):
         while True:
             self.LMR=0x00
