@@ -11,28 +11,19 @@ import os
 from PIL import Image
 from multiprocessing import Process
 from Command import COMMAND as cmd
-
-class VideoStreaming:
+import yolov5
+import time
+class VideoStreaming():
     def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(r'haarcascade_frontalface_default.xml')
         self.video_Flag=True
         self.connect_Flag=False
         self.face_x=0
         self.face_y=0
-        
+        self.object_list = ['Candle', 'Rhombic Dodecahedron']
+        self.object_class = 1
 
-        self.lastSeen = -1
-
-        self.redArea = 0
-        self.blueArea = 0
-        self.greenArea = 0
-        self.yellowArea = 0
-
-
-
-        self.color = ""
-        self.objectFOund = False
-
+        self.model = yolov5.load('C:\\Users\\SERN_INTERN\\402-SWEG-Interns_\\RPi_Car_Project\\Code\\Client\\Sample_TFLite_model\\objectmodel.pt')
 
     def StartTcpClient(self,IP):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -58,178 +49,125 @@ class VideoStreaming:
                 bValid = False
         return bValid
 
-    def face_detect(self,img, res):
-
-        
-
+    def find_bottle(self,img):
         if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
             MODEL_NAME = 'Sample_TFLite_model'
-            GRAPH_NAME = 'detect.tflite'
             LABELMAP_NAME = 'labelmap.txt'
-            min_conf_threshold = 0.2
-            
+            YOLOV5_GRAPH_NAME = 'objectmodel.pt'
+            check = False
+
             imW, imH = int(400), int(300)
 
             CWD_PATH = os.getcwd()
 
-            PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
-
             PATH_TO_LABELS = os.path.join(CWD_PATH,MODEL_NAME,LABELMAP_NAME)
 
-            frame = img.copy()
+            PATH_TO_YOLOV5_GRAPH = os.path.join(CWD_PATH,MODEL_NAME,YOLOV5_GRAPH_NAME)
 
+            frame = img.copy()
             with open(PATH_TO_LABELS, 'r') as f:
                 labels = [line.strip() for line in f.readlines()]
 
-            # Have to do a weird fix for label map if using the COCO "starter model" from
-            # https://www.tensorflow.org/lite/models/object_detection/overview
-            # First label is '???', which has to be removed.
-            if labels[0] == '???':
-                del(labels[0])
 
-            interpreter = tf.lite.Interpreter(model_path=PATH_TO_CKPT)
+            # Use yolov5
+            # model = yolov5.load(PATH_TO_YOLOV5_GRAPH)
 
-            interpreter.allocate_tensors()
+            # set model parameters
+            self.model.conf = 0.25  # NMS confidence threshold
+            self.model.iou = 0.45  # NMS IoU threshold
+            self.model.agnostic = False  # NMS class-agnostic
+            self.model.multi_label = True # NMS multiple labels per box
+            self.model.max_det = 1000  # maximum number of detections per image
 
-            # Get model details
-            input_details = interpreter.get_input_details()
-            output_details = interpreter.get_output_details()
-            height = input_details[0]['shape'][1]
-            width = input_details[0]['shape'][2]
+            results = self.model(frame) 
+            predictions = results.pred[0].cpu()
+            boxes = results.xyxy[0].numpy() #str(predictions[:, :4].numpy())
+            scores = str(predictions[:, 4].numpy())
+            classes = str(predictions[:, 5].numpy())
+            results.render() 
 
-            floating_model = (input_details[0]['dtype'] == np.float32)
+      
+            # print(boxes)
+            # print(classes)
+          
+            # print(str(results.xyxyn[0][:,-1].numpy()))
+            # print(results.pandas().xyxy[0])
 
-            input_mean = 127.5
-            input_std = 127.5
+            frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            # Check output layer name to determine if this model was created with TF2 or TF1,
-            # because outputs are ordered differently for TF2 and TF1 models
-            outname = output_details[0]['name']
-
-            if ('StatefulPartitionedCall' in outname): # This is a TF2 model
-                boxes_idx, classes_idx, scores_idx = 1, 3, 0
-            else: # This is a TF1 model
-                boxes_idx, classes_idx, scores_idx = 0, 1, 2
-
-            # Initialize frame rate calculation
-            frame_rate_calc = 60
-
-            frame_rgb = cv2.cvtColor(res, cv2.COLOR_BGR2RGB)
-
-            cv2.imwrite('frameRGB.jpg', frame_rgb) #the inverted colors???
-
-            frame_resized = cv2.resize(frame_rgb, (width, height))
-
-            cv2.imwrite('frameResized.jpg', frame_resized) # resized video for some reason?
-
+            frame_resized = cv2.resize(frame_rgb, (imW, imH))
             input_data = np.expand_dims(frame_resized, axis=0)
+          
+            
 
-            # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
-            if floating_model:
-                input_data = (np.float32(input_data) - input_mean) / input_std
-
-            # Perform the actual detection by running the model with the image as input
-            interpreter.set_tensor(input_details[0]['index'],input_data)
-            interpreter.invoke()
-
-            # Retrieve detection results
-            boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
-            classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
-            scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
-
-            max_score = 0
-            max_index = 0
-
-
-            #sports ball should be 36
-
-            # Loop over all detections and draw detection box if confidence is above minimum threshold
-            for i in range(len(scores)):
-                # Found desired object with decent confidence
-                if ( (scores[i] > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0) and ((labels[int(classes[i])] == "sports ball") or labels[int(classes[i])] == "apple" or labels[int(classes[i])] == "bowl")):
-                    # Get bounding box coordinates and draw box
-                    # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-                    ymin = int(max(1,(boxes[i][0] * imH)))
-                    xmin = int(max(1,(boxes[i][1] * imW)))
-                    ymax = int(min(imH,(boxes[i][2] * imH)))
-                    xmax = int(min(imW,(boxes[i][3] * imW)))
-                    
-                    # Draw label
-                    object_name = (self.color + " ball") # Look up object name from "labels" array using class index
-                    label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
-                    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-                    label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                    cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
-                    cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-                    cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-
-                    # Record current max
-                    max_score = scores[i]
-                    max_index = i 
-                    self.objectFOund = True
-
+          
+            for box in boxes:
+             if box[5] ==  self.object_class:
+                xmin = box[0]
+                xmax = box[2]
+                check = True
+                cx = (xmin+xmax)/2
+                if cx >=180 and cx<=290:
+                    self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'True'+'\n')
                 else:
-                    self.face_x = 0
+                    self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'False'+'\n')
+
+            if not check:
+                self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
+            
+
+                
+
+
+
+
+
+        #     max_score = 0.0
+        #     max_index = 0
+
+        #     # Loop over all detections and draw detection box if confidence is above minimum threshold
+        #     for i in range(len(scores)):      
+        #         curr_score = scores[i].numpy()
+        #         # Found desired object with decent confidence
+        #         if ( (curr_score > max_score) and (scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
+        #             # Get bounding box coordinates and draw box
+        #             # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
                     
+        #             ymin = int(max(1,(boxes[i][0]*imH)))
+        #             xmin = int(max(1,(boxes[i][1])))
+        #             ymax = int(min(imH,(boxes[i][2] * imH)))
+        #             xmax = int(min(imW,(boxes[i][3])))
 
-            if (max_index != 0):
-                ymin = int(max(1,(boxes[max_index][0] * imH)))
-                xmin = int(max(1,(boxes[max_index][1] * imW)))
-                ymax = int(min(imH,(boxes[max_index][2] * imH)))
-                xmax = int(min(imW,(boxes[max_index][3] * imW)))
-                self.face_x = float(xmin+xmax/2)
-                self.face_y = float(ymin+ymax/2)
-                
+        #             #find bounding box center
+        #             cx = (xmax + xmin)/ 2 
+        #             cy = (ymax + ymin)/ 2 
 
-               
+        #             # Draw label
+        #             object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
+        #             label = '%s: %d%%' % (object_name, int(curr_score*100)) # Example: 'person: 72%'
+        #             labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
+        #             label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
+        #             cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+        #             cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
+        #             cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
 
-            else:
-                Stop = '#0#0#0#0\n'
-                self.sendData(cmd.CMD_MOTOR+Stop)
-                self.sendData(cmd.CMD_MODE+"#"+'six'+"#"+'-2'+"\n")
+        # #             # Record current max
+        #             max_score = curr_score 
+        #             max_index = i
+        #             print(str(results.xyxyn[0][:,-1].numpy()))
+        #             if object_name == self.search_object:
+        #                 if int(cx) >=0 and  int(cx) <= 400:
+        #                     self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'True'+'\n')
+        #                 else:
+        #                     self.sendData(cmd.CMD_BALL+'#'+'True'+'#'+'False'+'\n')
+        #             else :
+        #                 self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
+        #         else:
+        #             self.sendData(cmd.CMD_BALL+'#'+'False'+'#'+'False'+'\n')
+        #     # Draw framerate in corner of frame
+        #     cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
-                
-
-
-            self.face_x = (xmin + xmax) / 2
-            self.face_y = (ymin + ymax) / 2
-            
-            
-
-            # Draw framerate in corner of frame
-            cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-        
         cv2.imwrite('video.jpg', frame)
-        print(self.objectFOund)
-        
-
-    def color_detect(self,img, color):
-        try:
-            hvsframe = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-            hsc_dic = {"red":(np.array([136, 87, 111], np.uint8),np.array([180, 255, 255], np.uint8)),
-                       "blue":(np.array([94, 80, 2], np.uint8),np.array([120, 255, 255], np.uint8)),
-                       "green":(np.array([45, 100, 72], np.uint8),np.array([90, 255, 255], np.uint8)),
-                       "yellow":(np.array([25, 50, 70], np.uint8),np.array([35, 255, 255], np.uint8))}
-
-            limits = hsc_dic[color.lower()]
-
-            mask = cv2.inRange(hvsframe, limits[0], limits[1])
-
-            res = cv2.bitwise_and(img,img, mask = mask)
-
-         
-            self.face_detect(img, res)
-            
-
-        except: 
-            cv2.imwrite('video.jpg',img)
-            self.objectFOund = False
-            self.face_x = 0
-            #print(self.objectFOund)
-            pass
-        
-
 
     def streaming(self,ip):
         stream_bytes = b' '
@@ -245,10 +183,11 @@ class VideoStreaming:
                 leng=struct.unpack('<L', stream_bytes[:4])
                 jpg=self.connection.read(leng[0])
                 if self.IsValidImage4Bytes(jpg):
-                            image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-                            if self.video_Flag:
-                                #self.face_detect(image)
-                                self.color_detect(image, self.color)
+                    image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+
+                    if self.video_Flag:
+                        if self.video_Flag:
+                                self.find_bottle(image)
                                 self.video_Flag=False
             except Exception as e:
                 print (e)
@@ -276,5 +215,5 @@ class VideoStreaming:
             self.connect_Flag=False
 
 if __name__ == '__main__':
-
     pass
+
