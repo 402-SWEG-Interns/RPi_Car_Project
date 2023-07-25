@@ -15,8 +15,7 @@ import yolov5
 import time
 class VideoStreaming():
     
-
-    
+    def __init__(self):
         self.face_cascade = cv2.CascadeClassifier(r'haarcascade_frontalface_default.xml')
         self.video_Flag=True
         self.connect_Flag=False
