@@ -52,11 +52,13 @@ class mywindow(QMainWindow,Ui_Client):
         self.label_Servo1.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
         self.label_Servo2.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
         
-        
+        self.Target_Aligned = False
         
         self.done_scan = False
         
         self.TargetLocated = ''
+        
+        self.TargetDestroyed = False
         
         self.label_FineServo1.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
         self.label_FineServo2.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
@@ -343,17 +345,17 @@ class mywindow(QMainWindow,Ui_Client):
         self.VSlider_Servo2.setValue(self.servo2)
         
     def on_btn_Left(self):
-        self.servo1=self.servo1-10
+        self.servo1=self.servo1-2
         if self.servo1<=0:
             self.servo1=0
         self.HSlider_Servo1.setValue(self.servo1)
     def on_btn_Down(self):
-        self.servo2=self.servo2-10
+        self.servo2=self.servo2-2
         if self.servo2<=80:
             self.servo2=80
         self.VSlider_Servo2.setValue(self.servo2)
     def on_btn_Right(self):
-        self.servo1=self.servo1+10
+        self.servo1=self.servo1+2
         if self.servo1>=180:
             self.servo1=180
         self.HSlider_Servo1.setValue(self.servo1)
@@ -474,14 +476,18 @@ class mywindow(QMainWindow,Ui_Client):
     def on_btn_Mode(self,Mode):
         if Mode.text() == "M-Free":
             if Mode.isChecked() == True:
-                # stop_thread(self.start_sequence_tracking)
+                try:
+                    stop_thread(self.start_sequence_tracking)
+                except:
+                    pass
                 self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'one'+self.endChar)
         if Mode.text() == "M-Light":
             if Mode.isChecked() == True:
                 #self.timer.stop()
                 # self.TCP.sendData(cmd.CMD_MODE+self.intervalChar+'two'+self.endChar)
-                self.start_sequence_tracking = Thread(target = self.Sequence_searching)
+                self.start_sequence_tracking = threading.Thread(target = self.Sequence_searching)
                 self.start_sequence_tracking.start()
+                print("Starting Sequence")
         if Mode.text() == "M-Sonic":
             if Mode.isChecked() == True:
                 #self.timer.stop()
@@ -585,16 +591,18 @@ class mywindow(QMainWindow,Ui_Client):
     def find_Face(self,face_x,face_y):
         if face_x!=0 and face_y!=0:
             offset_x=float(face_x/400-0.5)*2
-            offset_y=float(face_y/300-0.5)*2
             delta_degree_x = 4* offset_x
-            delta_degree_y = -4 * offset_y
-            self.servo1=self.servo1+delta_degree_x
-            self.servo2=self.servo2+delta_degree_y
-            if offset_x > -0.15 and offset_y >-0.15 and offset_x < 0.15 and offset_y <0.15:
+            
+            self.servoM=self.servo1+delta_degree_x
+            self.servo1 = round(self.servoM)
+            #print(delta_degree_x)
+
+            if delta_degree_x > -0.3 and delta_degree_x < 0.3:
+                self.Target_Aligned = True
                 pass
             else:
+                self.Target_Aligned = False
                 self.HSlider_Servo1.setValue(int(self.servo1))
-                self.VSlider_Servo2.setValue(int(self.servo2))
 
     def colorDetect(self):
         leds = (str(0x01),str(0x02),str(0x04),str(0x08),str(0x10),str(0x20),str(0x40),str(0x80))
@@ -645,49 +653,104 @@ class mywindow(QMainWindow,Ui_Client):
             print(e)
         self.TCP.video_Flag=True
         
-    
-               
+    def SequenceScanning(self):
+        self.TCP.TargetFound = False
+        for i in range(45):
+            self.on_btn_Left()
+            time.sleep(.1)
+            if self.TCP.TargetFound == True:
+                return
+            
+        
+        for i in range(90):
+            self.on_btn_Right()
+            time.sleep(.1)
+            if self.TCP.TargetFound:
+                return
+        
+        
+        for i in range(45):
+            self.on_btn_Left()
+            time.sleep(.1)
+            if self.TCP.TargetFound == True:
+                return
+          
+               #hi eli - chrissy
     def Sequence_searching(self):   #Searches for the Ball Algorithm
+        self.VSlider_Servo2.setValue(94)
+        self.Target_Aligned = False
         sequence = self.c.split(",")
-        while self.TargetLocated == False:
-            for x in sequence:
-                self.TCP.color = x
-                print(x)
-                print("Ball is located at :", "X = ", self.TCP.xball)
-                self.CarMoving()
-                time.sleep(3)
-                if self.done_scan == False:
-                    self.SequenceScanning()          
+        print(sequence)
+        
+        for x in sequence:
+            self.TCP.TargetFound = False
+            self.TargetDestroyed = False
+            self.colorDetect()
+            self.TCP.color = x
+            print(x)
+            print("Ball is located at :", "X = ", self.TCP.xball)
+            self.SequenceScanning()
+            time.sleep(3)
+            
+            while not self.Target_Aligned:
+                self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                time.sleep(.05)
+            
+            while not self.TargetDestroyed:
+                for i in range(30):
+                    self.find_Face(self.TCP.face_x,self.TCP.face_y)
+                    time.sleep(.05)
+                time.sleep(1)
+                # self.adjust()
+            self.TCP.found_ball = False
+            print("DONE")
+                          
     
-    def SequenceScanning(self):      #Targeting System, moves the car towards the target
-        if self.TCP.TargetFound == True:
-            print("Target Found")
-            return
-        else:
-            print("Target not sighted")     
+      
     
     def CarMoving(self):
-        self.on_btn_Home()
-        sequence = self.c.split(",")
-        x = self.TCP.xball    
-
-        if x >= 0 and x < 195:
-            self.TargetLocated = 'Right'
-        elif x > 205:
-            self.TargetLocated = 'Left'
-        elif (195 < x < 205):
-            self.TargetLocated = 'Center'
+        self.TCP.TargetFound = False
             
-        if self.TargetLocated == 'Right':
-            self.on_btn_Turn_Left()
-            print('TUrning Left')
-        elif self.TargetLocated == 'Left':
-            self.on_btn_Turn_Right()
-            print('TUrning Right')
-
-        elif self.TargetLocated == 'Center':
+        if self.servo1 >= 82 and self.servo1 <= 88:
+            self.Target_Aligned = True
+            self.startEdge()
+            
             self.on_btn_ForWard()
-            print('TUrning Forward')
+            print('forward')
+
+            # while not self.edge:
+            # if self.edge:
+            #     self.on_btn_Stop()
+            #     time.sleep(0.1)                
+            
+            self.TargetDestroyed = True
+        elif self.servo1 < 82:
+            self.Target_Aligned = True
+            self.on_btn_Turn_Left()
+            time.sleep(.1)
+            self.on_btn_Stop()                
+        elif self.servo1 > 88:
+            self.Target_Aligned = True
+            self.on_btn_Turn_Right()
+            time.sleep(.1)
+            self.on_btn_Stop()    
+        else:
+            print("We dead")
+            
+    def turn_around(self):
+        self.on_btn_BackWard()
+        time.sleep(.5)
+        self.on_btn_Stop()
+        pass
+    
+    def startEdge(self):
+        print("looking for line")
+        self.TCP.sendData(cmd.CMD_PPLOOK+self.intervalChar+'start'+self.endChar)
+
+    def stopEdge(self):
+        print('done looking')
+        self.TCP.sendData(cmd.CMD_PPLOOK+self.intervalChar+'end'+self.endChar)
+        
             
         
         
